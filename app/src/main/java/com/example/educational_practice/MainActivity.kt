@@ -12,36 +12,24 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.educational_practice.ui.theme.EducationalpracticeTheme
+import kotlinx.coroutines.selects.RegistrationFunction
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            EducationalpracticeTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
-                }
-            }
+
         }
     }
 }
 
 @Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
+fun RegistrationScreen(){
+
 }
 
-@Preview(showBackground = true)
 @Composable
-fun GreetingPreview() {
-    EducationalpracticeTheme {
-        Greeting("Android")
-    }
+fun AuthorizationScreen(){
+
 }
