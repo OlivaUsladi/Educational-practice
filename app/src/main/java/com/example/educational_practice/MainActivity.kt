@@ -38,14 +38,70 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            AuthorizationScreen()
+            RegistrationScreen()
         }
     }
 }
 
 @Composable
 fun RegistrationScreen(){
-
+    var login = remember { mutableStateOf("") }
+    var password = remember { mutableStateOf("") }
+    var email = remember { mutableStateOf("") }
+    Column (modifier = Modifier.fillMaxSize().background(Color(0xFFFFFEFA))) {
+        Image(painter = painterResource(R.drawable.img),
+            contentDescription = "logo",
+            modifier = Modifier
+                .padding(top=134.dp)
+                .width(144.dp)
+                .height(169.dp)
+                .align(Alignment.CenterHorizontally)
+        )
+        Box(Modifier.fillMaxWidth().align(Alignment.CenterHorizontally)) {
+            Text(
+                text = "The Road to adulthood",
+                color = Color(0xFFA47676),
+                modifier = Modifier.align(Alignment.Center),
+                fontSize = 32.sp
+            )
+        }
+        Box(Modifier.fillMaxWidth().align(Alignment.CenterHorizontally)) {
+            TextField(modifier = Modifier.padding(top = 150.dp).align(Alignment.Center).height(40.dp),
+                value = email.value,
+                onValueChange = { email.value = it },
+                label = {
+                    Text(
+                        text = "Enter email",
+                        fontSize = 24.sp,
+                        textAlign = TextAlign.Center
+                    )
+                })
+        }
+        Box(Modifier.fillMaxWidth().align(Alignment.CenterHorizontally)) {
+            TextField(modifier = Modifier.padding(top = 50.dp).align(Alignment.Center).height(40.dp),
+                value = login.value,
+                onValueChange = { login.value = it },
+                label = {
+                    Text(
+                        text = "Enter login",
+                        fontSize = 24.sp,
+                        textAlign = TextAlign.Center
+                    )
+                })
+        }
+        Box(Modifier.fillMaxWidth().align(Alignment.CenterHorizontally)) {
+            TextField(modifier = Modifier.padding(top=50.dp).align(Alignment.Center).height(40.dp),
+                value = password.value,
+                onValueChange = {password.value = it},
+                label = { Text(text = "Enter password", fontSize = 24.sp, textAlign = TextAlign.Center) })
+        }
+        Box(Modifier.fillMaxWidth().align(Alignment.CenterHorizontally)){
+            Text(text = "Authorization",
+                color = Color(0xFFA47676),
+                modifier = Modifier.align(Alignment.Center).padding(top=40.dp),
+                fontSize = 24.sp)
+        }
+    }
 }
 
 @Composable
