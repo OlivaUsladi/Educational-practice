@@ -1,11 +1,13 @@
 package com.example.educational_practice
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -24,6 +26,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
@@ -48,6 +51,7 @@ fun RegistrationScreen(){
     var login = remember { mutableStateOf("") }
     var password = remember { mutableStateOf("") }
     var email = remember { mutableStateOf("") }
+    val context = LocalContext.current
     Column (modifier = Modifier.fillMaxSize().background(Color(0xFFFFFEFA))) {
         Image(painter = painterResource(R.drawable.img),
             contentDescription = "logo",
@@ -98,7 +102,10 @@ fun RegistrationScreen(){
         Box(Modifier.fillMaxWidth().align(Alignment.CenterHorizontally)){
             Text(text = "Authorization",
                 color = Color(0xFFA47676),
-                modifier = Modifier.align(Alignment.Center).padding(top=40.dp),
+                modifier = Modifier.align(Alignment.Center).padding(top=40.dp).clickable(){
+                    val intent = Intent(context, Financial::class.java)
+                    context.startActivity(intent)
+                },
                 fontSize = 24.sp)
         }
     }
@@ -106,6 +113,7 @@ fun RegistrationScreen(){
 
 @Composable
 fun AuthorizationScreen(){
+    val context = LocalContext.current
     var login = remember { mutableStateOf("") }
     var password = remember { mutableStateOf("") }
     Column (modifier = Modifier.fillMaxSize().background(Color(0xFFFFFEFA))) {
@@ -146,7 +154,10 @@ fun AuthorizationScreen(){
         Box(Modifier.fillMaxWidth().align(Alignment.CenterHorizontally)){
             Text(text = "Registration",
                 color = Color(0xFFA47676),
-                modifier = Modifier.align(Alignment.Center).padding(top=40.dp),
+                modifier = Modifier.align(Alignment.Center).padding(top=40.dp).clickable(){
+                    val intent = Intent(context, Financial::class.java)
+                    context.startActivity(intent)
+                },
                 fontSize = 24.sp)
         }
     }
