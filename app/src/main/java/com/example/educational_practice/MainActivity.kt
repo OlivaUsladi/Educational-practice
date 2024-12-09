@@ -15,6 +15,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -128,6 +130,15 @@ fun RegistrationScreen(navController: NavController) {
                 },
                 fontSize = 24.sp)
         }
+        Button(onClick = {
+            //здесь будет ввод данных
+            navController.navigate(Routes.Authorization.route)
+        },
+            modifier = Modifier.padding(top=20.dp).align(Alignment.CenterHorizontally).width(150.dp),
+            colors = ButtonDefaults.buttonColors(Color(0xFFB1A5B8)))
+        {
+            Text("Send")
+        }
     }
 }
 
@@ -180,6 +191,16 @@ fun AuthorizationScreen(navController: NavController){
                     context.startActivity(intent)*/
                 },
                 fontSize = 24.sp)
+        }
+        Button(onClick = {
+            //здесь будет проверка данных
+            val intent = Intent(context, Financial::class.java)
+            context.startActivity(intent)
+        },
+            modifier = Modifier.padding(top=20.dp).align(Alignment.CenterHorizontally).width(150.dp),
+            colors = ButtonDefaults.buttonColors(Color(0xFFB1A5B8)))
+        {
+            Text("Send")
         }
     }
 }
