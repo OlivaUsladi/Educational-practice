@@ -6,6 +6,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -15,8 +16,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material.BottomNavigation
 import androidx.compose.material.BottomNavigationItem
+import androidx.compose.material.Icon
 import androidx.compose.material.Surface
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -189,6 +192,20 @@ fun TargetsScreen(){
             }
         }
 
+        Box(Modifier.fillMaxWidth().wrapContentSize(Alignment.Center)) {
+            Row {
+                Image(
+                    painter = painterResource(R.drawable.icon_wallet),
+                    contentDescription = "wallet",
+                    modifier = Modifier.size(24.dp)
+                )
+                Text(text = "Finance",
+                    fontSize = 24.sp,
+                    color = Color(0xFFA47676),
+                    modifier = Modifier.padding(start=5.dp)
+                    )
+            }
+        }
 
     }
 }
