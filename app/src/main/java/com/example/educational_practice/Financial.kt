@@ -108,10 +108,10 @@ fun NavHostContainer(
                 TargetsScreen()
             }
             composable("route 2") {
-                //cityScreen()
+                AnalyzeScreen()
             }
             composable("route 3") {
-                //savedCityScreen()
+                LimitsScreen()
             }
         })
 }
@@ -188,5 +188,79 @@ fun TargetsScreen(){
                 }
             }
         }
+
+
+    }
+}
+
+@Composable
+fun AnalyzeScreen(){
+    Column (modifier = Modifier.fillMaxSize().background(Color(0xFFFFFEFA))) {
+        Box (Modifier.fillMaxWidth().height(150.dp).background(Color.White)){
+            Row (modifier = Modifier.padding(top=50.dp, start = 30.dp)){
+                Image(painter = painterResource(R.drawable.img),
+                    contentDescription = "logo",
+                    modifier = Modifier.size(70.dp)
+                )
+                Box (Modifier.padding(top=25.dp,start = 25.dp)){
+                    Text( text = "The Road to adulthood",
+                        color = Color(0xFFA47676),
+                        modifier = Modifier.align(Alignment.Center),
+                        fontSize = 20.sp)
+                }
+                Column (modifier = Modifier.padding(top=25.dp, start=30.dp)) {
+                    Box (Modifier.padding(start=5.dp)){
+                        Image(
+                            painter = painterResource(R.drawable.icon_menu),
+                            contentDescription = "menu",
+                            modifier = Modifier.size(24.dp)
+                        )
+                    }
+                    Box {
+                        Text(text = "menu",
+                            color = Color(0xFF79747E),
+                            fontSize = 14.sp)
+                    }
+                }
+            }
+        }
+
+
+    }
+}
+
+@Composable
+fun LimitsScreen(){
+    Column (modifier = Modifier.fillMaxSize().background(Color(0xFFFFFEFA))) {
+        Box (Modifier.fillMaxWidth().height(150.dp).background(Color.White)){
+            Row (modifier = Modifier.padding(top=50.dp, start = 30.dp)){
+                Image(painter = painterResource(R.drawable.img),
+                    contentDescription = "logo",
+                    modifier = Modifier.size(70.dp)
+                )
+                Box (Modifier.padding(top=25.dp,start = 25.dp)){
+                    Text( text = "The Road to adulthood",
+                        color = Color(0xFFA47676),
+                        modifier = Modifier.align(Alignment.Center),
+                        fontSize = 20.sp)
+                }
+                Column (modifier = Modifier.padding(top=25.dp, start=30.dp)) {
+                    Box (Modifier.padding(start=5.dp)){
+                        Image(
+                            painter = painterResource(R.drawable.icon_menu),
+                            contentDescription = "menu",
+                            modifier = Modifier.size(24.dp)
+                        )
+                    }
+                    Box {
+                        Text(text = "menu",
+                            color = Color(0xFF79747E),
+                            fontSize = 14.sp)
+                    }
+                }
+            }
+        }
+
+
     }
 }

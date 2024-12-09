@@ -33,6 +33,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import com.example.educational_practice.ui.theme.EducationalpracticeTheme
 import kotlinx.coroutines.selects.RegistrationFunction
 
@@ -41,13 +45,28 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            RegistrationScreen()
+            val navController = rememberNavController()
+            NavHost(navController = navController, startDestination = Routes.Authorization.route) {
+                composable(Routes.Authorization.route) {
+                    AuthorizationScreen(navController)
+                }
+                composable(Routes.Registration.route) {
+                    RegistrationScreen(navController)
+                }
+            }
+
         }
     }
 }
 
+sealed class Routes(val route: String) {
+    object Authorization : Routes("authorization")
+    object Registration : Routes("registration")
+}
+
+
 @Composable
-fun RegistrationScreen(){
+fun RegistrationScreen(navController: NavController) {
     var login = remember { mutableStateOf("") }
     var password = remember { mutableStateOf("") }
     var email = remember { mutableStateOf("") }
@@ -103,8 +122,9 @@ fun RegistrationScreen(){
             Text(text = "Authorization",
                 color = Color(0xFFA47676),
                 modifier = Modifier.align(Alignment.Center).padding(top=40.dp).clickable(){
-                    val intent = Intent(context, Financial::class.java)
-                    context.startActivity(intent)
+                    navController.navigate(Routes.Authorization.route)
+                    /*val intent = Intent(context, Financial::class.java)
+                    context.startActivity(intent)*/
                 },
                 fontSize = 24.sp)
         }
@@ -112,7 +132,7 @@ fun RegistrationScreen(){
 }
 
 @Composable
-fun AuthorizationScreen(){
+fun AuthorizationScreen(navController: NavController){
     val context = LocalContext.current
     var login = remember { mutableStateOf("") }
     var password = remember { mutableStateOf("") }
@@ -155,8 +175,9 @@ fun AuthorizationScreen(){
             Text(text = "Registration",
                 color = Color(0xFFA47676),
                 modifier = Modifier.align(Alignment.Center).padding(top=40.dp).clickable(){
-                    val intent = Intent(context, Financial::class.java)
-                    context.startActivity(intent)
+                    navController.navigate(Routes.Registration.route)
+                    /*val intent = Intent(context, Financial::class.java)
+                    context.startActivity(intent)*/
                 },
                 fontSize = 24.sp)
         }
