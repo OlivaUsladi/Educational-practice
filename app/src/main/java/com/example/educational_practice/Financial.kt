@@ -11,12 +11,17 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.BottomNavigation
 import androidx.compose.material.BottomNavigationItem
 import androidx.compose.material.Icon
@@ -31,6 +36,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -72,6 +78,16 @@ data class BottomNavItem(
     val label: String, //название элемента навигации
     val icon: Int, //иконка элемента навигации
     val route:String, //маршрут элемента навигации
+)
+
+
+//############################################################################
+//класс для хранения элементов накопления
+//############################################################################
+data class Targets(
+    val title: String,
+    val Target: Int,
+    val Current: Int,
 )
 
 //############################################################################
@@ -160,23 +176,27 @@ fun BottomNavigationBar(navController: NavController) {
     }
 }
 
+
 @Composable
-fun TargetsScreen(){
-    Column (modifier = Modifier.fillMaxSize().background(Color(0xFFFFFEFA))) {
-        Box (Modifier.fillMaxWidth().height(150.dp).background(Color.White)){
-            Row (modifier = Modifier.padding(top=50.dp, start = 30.dp)){
+fun TargetsScreen() {
+    val targetsList = listOf(Targets("Food", 1500, 1000), Targets("Transport", 200, 200),
+        Targets("Coffee", 1000, 1500), Targets("Entertainments", 3000, 1200))
+
+    Column(modifier = Modifier.fillMaxSize().background(Color(0xFFFFFEFA))) {
+        // Верхняя часть экрана аналогична вашему коду
+        Box(Modifier.fillMaxWidth().height(150.dp).background(Color.White)) {
+            Row(modifier = Modifier.padding(top = 50.dp, start = 30.dp)) {
                 Image(painter = painterResource(R.drawable.img),
                     contentDescription = "logo",
-                    modifier = Modifier.size(70.dp)
-                )
-                Box (Modifier.padding(top=25.dp,start = 25.dp)){
-                    Text( text = "The Road to adulthood",
+                    modifier = Modifier.size(70.dp))
+                Box(Modifier.padding(top = 25.dp, start = 25.dp)) {
+                    Text(text = "The Road to adulthood",
                         color = Color(0xFFA47676),
                         modifier = Modifier.align(Alignment.Center),
                         fontSize = 20.sp)
                 }
-                Column (modifier = Modifier.padding(top=25.dp, start=30.dp)) {
-                    Box (Modifier.padding(start=5.dp)){
+                Column(modifier = Modifier.padding(top = 25.dp, start = 30.dp)) {
+                    Box(Modifier.padding(start = 5.dp)) {
                         Image(
                             painter = painterResource(R.drawable.icon_menu),
                             contentDescription = "menu",
@@ -202,13 +222,76 @@ fun TargetsScreen(){
                 Text(text = "Finance",
                     fontSize = 24.sp,
                     color = Color(0xFFA47676),
-                    modifier = Modifier.padding(start=5.dp)
-                    )
+                    modifier = Modifier.padding(start = 5.dp, bottom = 30.dp))
             }
         }
 
+        // LazyColumn для отображения списка
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.spacedBy(25.dp),
+            horizontalAlignment = Alignment.CenterHorizontally // Центрируем элементы
+        ) {
+            items(targetsList) { item ->
+                // Каждый элемент списка
+                Box(
+                    modifier = Modifier
+                        .background(Color(0xFFFFF3F3), shape = RoundedCornerShape(20.dp))
+                        .width(300.dp)
+                        .height(150.dp)
+                        .align(Alignment.CenterHorizontally) // Центрируем Box внутри LazyColumn
+                ) {
+                    var More = item.Target-item.Current
+                    Column (modifier = Modifier.fillMaxSize().padding(start=7.dp),
+                        verticalArrangement = Arrangement.spacedBy(10.dp)){
+                        Box(Modifier.fillMaxWidth()) {
+                            Text(
+                                text = item.title,
+                                fontSize = 24.sp,
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier.align(Alignment.TopCenter)
+                            )
+                        }
+                        Row {
+                            Text(text = "Target: ",
+                                fontSize = 18.sp)
+                            Spacer(modifier = Modifier.width(7.dp))
+                            Text(text = item.Target.toString(),
+                                fontSize = 18.sp)
+                        }
+                        Row {
+                            Text(text = "Current: ",
+                                fontSize = 18.sp)
+                            Spacer(modifier = Modifier.width(7.dp))
+                            Text(text = item.Current.toString(),
+                                fontSize = 18.sp)
+                            Spacer(modifier = Modifier.width(10.dp))
+                            Text(text = "Required: ",
+                                fontSize = 18.sp)
+                            Spacer(modifier = Modifier.width(7.dp))
+                            if (More<0){
+                                More=0
+                            }
+                            Text(text = More.toString(),
+                                fontSize = 18.sp)
+                        }
+                        //Сделать эту хрень кликабельной
+                        Box(Modifier.fillMaxWidth().padding(top=5.dp)) {
+                            Text(
+                                text = "Change",
+                                fontSize = 20.sp,
+                                color = Color(0xFFE68DF4),
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier.align(Alignment.TopCenter)
+                            )
+                        }
+                    }
+                }
+            }
+        }
     }
 }
+
 
 @Composable
 fun AnalyzeScreen(){
