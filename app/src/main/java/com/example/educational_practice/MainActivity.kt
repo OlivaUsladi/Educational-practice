@@ -30,6 +30,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -147,6 +148,8 @@ fun AuthorizationScreen(navController: NavController){
     val context = LocalContext.current
     var login = remember { mutableStateOf("") }
     var password = remember { mutableStateOf("") }
+    var errorFlag = remember{mutableStateOf(false)}
+    val userList: Array<String> = stringArrayResource(id =R.array.users )
     Column (modifier = Modifier.fillMaxSize().background(Color(0xFFFFFEFA))) {
         Image(painter = painterResource(R.drawable.img),
             contentDescription = "logo",
@@ -164,23 +167,27 @@ fun AuthorizationScreen(navController: NavController){
                 fontSize = 32.sp
             )
         }
-        Box(Modifier.fillMaxWidth().align(Alignment.CenterHorizontally)) {
-            TextField(modifier = Modifier.padding(top = 150.dp).align(Alignment.Center).height(40.dp),
+        Box(Modifier.fillMaxWidth().align(Alignment.CenterHorizontally).padding(top = 150.dp)) {
+            TextField(modifier = Modifier.align(Alignment.Center).height(60.dp),
                 value = login.value,
                 onValueChange = { login.value = it },
-                label = {
+                isError = errorFlag.value,
+                placeholder = {
                     Text(
                         text = "Enter login/email",
-                        fontSize = 24.sp,
+                        fontSize = 18.sp,
                         textAlign = TextAlign.Center
                     )
                 })
         }
-        Box(Modifier.fillMaxWidth().align(Alignment.CenterHorizontally)) {
-            TextField(modifier = Modifier.padding(top=50.dp).align(Alignment.Center).height(40.dp),
+        Box(Modifier.fillMaxWidth().align(Alignment.CenterHorizontally).padding(top=35.dp)) {
+            TextField(modifier = Modifier.align(Alignment.Center).height(60.dp),
                 value = password.value,
                 onValueChange = {password.value = it},
-                label = { Text(text = "Enter password", fontSize = 24.sp, textAlign = TextAlign.Center) })
+                isError = errorFlag.value,
+                placeholder = { Text(text = "Enter password",
+                    fontSize = 18.sp,
+                    textAlign = TextAlign.Center) })
         }
         Box(Modifier.fillMaxWidth().align(Alignment.CenterHorizontally)){
             Text(text = "Registration",
@@ -194,8 +201,12 @@ fun AuthorizationScreen(navController: NavController){
         }
         Button(onClick = {
             //здесь будет проверка данных
-            val intent = Intent(context, Financial::class.java)
-            context.startActivity(intent)
+            if (userList.contains("${login.value} ${password.value}")) {
+                val intent = Intent(context, Financial::class.java)
+                context.startActivity(intent)
+            }else{
+                errorFlag.value=true
+            }
         },
             modifier = Modifier.padding(top=20.dp).align(Alignment.CenterHorizontally).width(150.dp),
             colors = ButtonDefaults.buttonColors(Color(0xFFB1A5B8)))

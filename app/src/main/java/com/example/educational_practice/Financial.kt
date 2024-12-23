@@ -6,6 +6,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -22,16 +23,22 @@ import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.BottomNavigation
 import androidx.compose.material.BottomNavigationItem
 import androidx.compose.material.Icon
 import androidx.compose.material.Surface
+import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
@@ -67,6 +74,7 @@ class Financial : ComponentActivity() {
                     }
                 )
             }
+
         }
     }
 }
@@ -100,6 +108,10 @@ data class Budget(
     val LastMonth: Int,
 )
 
+sealed class RoutesFinance(val route: String) {
+    object CreateIncome : Routes("income")
+    object CreateExpense : Routes("expense")
+}
 
 //############################################################################
 //объекты навигации
@@ -138,11 +150,15 @@ fun NavHostContainer(
                 TargetsScreen()
             }
             composable("route 2") {
-                AnalyzeScreen()
+                AnalyzeScreen(navController)
             }
             composable("route 3") {
                 LimitsScreen()
             }
+            composable("income") {
+                CreateIncome(navController)
+            }
+
         })
 }
 
@@ -187,14 +203,22 @@ fun BottomNavigationBar(navController: NavController) {
     }
 }
 
+val targetsList = listOf(Targets("Food", 1500, 1000), Targets("Transport", 200, 200),
+    Targets("Coffee", 1000, 1500), Targets("Entertainments", 3000, 1200))
+
+val cashList = mutableListOf(200, 500, 800, 250)
+val sberbankList = mutableListOf(1000, 500, 9600, 1250)
+val centerinvestList = mutableListOf(321, 562, 856)
+
+val cashListex = mutableListOf(20, 50, 800, 250)
+val sberbankListex = mutableListOf(1000, 50, 900, 150)
+val centerinvestListex = mutableListOf(21, 562, 856)
 
 @Composable
 fun TargetsScreen() {
-    val targetsList = listOf(Targets("Food", 1500, 1000), Targets("Transport", 200, 200),
-        Targets("Coffee", 1000, 1500), Targets("Entertainments", 3000, 1200))
+
 
     Column(modifier = Modifier.fillMaxSize().background(Color(0xFFFFFEFA))) {
-        // Верхняя часть экрана аналогична вашему коду
         Box(Modifier.fillMaxWidth().height(150.dp).background(Color.White)) {
             Row(modifier = Modifier.padding(top = 50.dp, start = 30.dp)) {
                 Image(painter = painterResource(R.drawable.img),
@@ -305,10 +329,95 @@ fun TargetsScreen() {
 
 
 @Composable
-fun AnalyzeScreen(){
-    val budgetList = listOf(Budget("Income for cash", 3000, 2500), Budget("Income for Sberbank", 10000, 12000),
-        Budget("Income for Center-Invest", 3006, 3006), Budget("Expense for cash", 1000, 1500),
-        Budget("Expense for Sberbank", 8563, 10954), Budget("Expense for Center-Invest", 1254, 2296))
+fun CreateIncome(navController: NavController){
+    val description = remember { mutableStateOf("") }
+    val amount = remember { mutableStateOf("") }
+    val Intamount = remember { mutableStateOf(0) }
+    var errorFlag = remember{mutableStateOf(false)}
+    val bank = remember { mutableStateOf("") }
+    val banks = listOf("Cash", "Sberbank", "Center-Invest")
+    val (selectedOption, onOptionSelected) = remember { mutableStateOf(banks[0]) }
+
+
+    Column(modifier = Modifier.fillMaxSize().background(Color(0xFFFFFEFA)).padding(top=80.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+        TextField(modifier = Modifier.height(60.dp),
+            value = description.value,
+            onValueChange = { description.value = it },
+            isError = errorFlag.value,
+            placeholder = {
+                Text(
+                    text = "Enter description",
+                    fontSize = 18.sp,
+                    textAlign = TextAlign.Center
+                )
+            })
+        Spacer(modifier = Modifier.height(25.dp))
+        TextField(modifier = Modifier.height(60.dp),
+            value = amount.value,
+            onValueChange = { amount.value = it },
+            isError = errorFlag.value,
+            placeholder = {
+                Text(
+                    text = "Enter amount",
+                    fontSize = 18.sp,
+                    textAlign = TextAlign.Center
+                )
+            })
+        Spacer(modifier = Modifier.height(25.dp))
+        Column(Modifier.selectableGroup()) {
+            banks.forEach { text ->
+                Row( Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically)
+                {
+                    RadioButton(
+                        selected = (text == selectedOption),
+                        onClick = { onOptionSelected(text)
+                            bank.value = text
+                        }
+                    )
+                    Text( text = text, fontSize = 24.sp )
+                }
+            }
+        }
+        Row (modifier = Modifier.padding(top=70.dp)){
+            Button(onClick = {
+                navController.navigate("route 2")
+            }) {
+                Text("Cancel")
+            }
+            Spacer(modifier = Modifier.width(30.dp))
+            Button(onClick = {
+                Intamount.value = amount.value.toInt()
+                when (bank.value) {
+                    "Cash" -> cashList.add(Intamount.value)
+                    "Sberbank" -> sberbankList.add(Intamount.value)
+                    "Centerinvest" -> centerinvestList.add(Intamount.value)
+                }
+                updateBudgetList()
+                navController.navigate("route 2")
+            }) {
+                Text("Send")
+            }
+        }
+    }
+}
+
+val budgetList = mutableListOf(Budget("Income for cash", cashList.sum(), 2500), Budget("Income for Sberbank", sberbankList.sum(), 12000),
+    Budget("Income for Center-Invest", centerinvestList.sum(), 3006), Budget("Expense for cash", cashListex.sum(), 1500),
+    Budget("Expense for Sberbank", sberbankListex.sum(), 10954), Budget("Expense for Center-Invest", centerinvestListex.sum(), 2296))
+
+fun updateBudgetList() {
+    budgetList.clear() // Очистить текущий список
+    budgetList.add(Budget("Income for cash", cashList.sum(), 2500))
+    budgetList.add(Budget("Income for Sberbank", sberbankList.sum(), 12000))
+    budgetList.add(Budget("Income for Center-Invest", centerinvestList.sum(), 3006))
+    budgetList.add(Budget("Expense for cash", cashListex.sum(), 1500))
+    budgetList.add(Budget("Expense for Sberbank", sberbankListex.sum(), 10954))
+    budgetList.add(Budget("Expense for Center-Invest", centerinvestListex.sum(), 2296))
+}
+
+
+@Composable
+fun AnalyzeScreen(navController: NavController){
 
     Column(modifier = Modifier.fillMaxSize().background(Color(0xFFFFFEFA))) {
         // Верхняя часть экрана аналогична вашему коду
@@ -364,16 +473,22 @@ fun AnalyzeScreen(){
             ) {
                 Box(Modifier.padding(start = 15.dp).wrapContentWidth(Alignment.CenterHorizontally)) {
                     Column {
-                        Image(
-                            painter = painterResource(R.drawable.icon_add),
-                            contentDescription = "add_icon",
-                            modifier = Modifier.size(24.dp).align(Alignment.CenterHorizontally)
-                        )
-                        Text(
-                            text = "Add income",
-                            fontSize = 16.sp,
-                            textAlign = TextAlign.Center
-                        )
+                        Box(Modifier.clickable(){
+                            navController.navigate(RoutesFinance.CreateIncome.route)
+                        }) {
+                            Column {
+                                Image(
+                                    painter = painterResource(R.drawable.icon_add),
+                                    contentDescription = "add_icon",
+                                    modifier = Modifier.size(24.dp)
+                                )
+                                Text(
+                                    text = "Add income",
+                                    fontSize = 16.sp,
+                                    textAlign = TextAlign.Center
+                                )
+                            }
+                        }
                         Spacer(modifier = Modifier.height(15.dp))
                         Image(
                             painter = painterResource(R.drawable.icon_open),
