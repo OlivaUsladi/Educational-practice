@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -89,6 +90,16 @@ data class Targets(
     val Target: Int,
     val Current: Int,
 )
+
+//############################################################################
+//класс для хранения анализа бюджета
+//############################################################################
+data class Budget(
+    val title: String,
+    val Current: Int,
+    val LastMonth: Int,
+)
+
 
 //############################################################################
 //объекты навигации
@@ -295,21 +306,25 @@ fun TargetsScreen() {
 
 @Composable
 fun AnalyzeScreen(){
-    Column (modifier = Modifier.fillMaxSize().background(Color(0xFFFFFEFA))) {
-        Box (Modifier.fillMaxWidth().height(150.dp).background(Color.White)){
-            Row (modifier = Modifier.padding(top=50.dp, start = 30.dp)){
+    val budgetList = listOf(Budget("Income for cash", 3000, 2500), Budget("Income for Sberbank", 10000, 12000),
+        Budget("Income for Center-Invest", 3006, 3006), Budget("Expense for cash", 1000, 1500),
+        Budget("Expense for Sberbank", 8563, 10954), Budget("Expense for Center-Invest", 1254, 2296))
+
+    Column(modifier = Modifier.fillMaxSize().background(Color(0xFFFFFEFA))) {
+        // Верхняя часть экрана аналогична вашему коду
+        Box(Modifier.fillMaxWidth().height(150.dp).background(Color.White)) {
+            Row(modifier = Modifier.padding(top = 50.dp, start = 30.dp)) {
                 Image(painter = painterResource(R.drawable.img),
                     contentDescription = "logo",
-                    modifier = Modifier.size(70.dp)
-                )
-                Box (Modifier.padding(top=25.dp,start = 25.dp)){
-                    Text( text = "The Road to adulthood",
+                    modifier = Modifier.size(70.dp))
+                Box(Modifier.padding(top = 25.dp, start = 25.dp)) {
+                    Text(text = "The Road to adulthood",
                         color = Color(0xFFA47676),
                         modifier = Modifier.align(Alignment.Center),
                         fontSize = 20.sp)
                 }
-                Column (modifier = Modifier.padding(top=25.dp, start=30.dp)) {
-                    Box (Modifier.padding(start=5.dp)){
+                Column(modifier = Modifier.padding(top = 25.dp, start = 30.dp)) {
+                    Box(Modifier.padding(start = 5.dp)) {
                         Image(
                             painter = painterResource(R.drawable.icon_menu),
                             contentDescription = "menu",
@@ -325,8 +340,153 @@ fun AnalyzeScreen(){
             }
         }
 
+        Box(Modifier.fillMaxWidth().wrapContentSize(Alignment.Center)) {
+            Row {
+                Image(
+                    painter = painterResource(R.drawable.icon_wallet),
+                    contentDescription = "wallet",
+                    modifier = Modifier.size(24.dp)
+                )
+                Text(text = "Finance",
+                    fontSize = 24.sp,
+                    color = Color(0xFFA47676),
+                    modifier = Modifier.padding(start = 5.dp, bottom = 30.dp))
+            }
+        }
 
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween // Распределяет пространство между элементами
+        ) {
+            Column(
+                modifier = Modifier.weight(1f), // Задает вес первой колонки
+                verticalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                Box(Modifier.padding(start = 15.dp).wrapContentWidth(Alignment.CenterHorizontally)) {
+                    Column {
+                        Image(
+                            painter = painterResource(R.drawable.icon_add),
+                            contentDescription = "add_icon",
+                            modifier = Modifier.size(24.dp).align(Alignment.CenterHorizontally)
+                        )
+                        Text(
+                            text = "Add income",
+                            fontSize = 16.sp,
+                            textAlign = TextAlign.Center
+                        )
+                        Spacer(modifier = Modifier.height(15.dp))
+                        Image(
+                            painter = painterResource(R.drawable.icon_open),
+                            contentDescription = "open_icon",
+                            modifier = Modifier.size(24.dp).align(Alignment.CenterHorizontally)
+                        )
+                        Text(
+                            text = "My income",
+                            fontSize = 16.sp,
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                }
+            }
+
+            Column(
+                modifier = Modifier.wrapContentWidth(Alignment.End),
+                horizontalAlignment = Alignment.End
+            ) {
+                Box(Modifier.padding(end = 15.dp).wrapContentWidth(Alignment.CenterHorizontally)) {
+                    Column {
+                        Image(
+                            painter = painterResource(R.drawable.icon_add),
+                            contentDescription = "add_icon",
+                            modifier = Modifier.size(24.dp).align(Alignment.CenterHorizontally)
+                        )
+                        Text(
+                            text = "Add expense",
+                            fontSize = 16.sp,
+                            textAlign = TextAlign.Center
+                        )
+                        Spacer(modifier = Modifier.height(15.dp))
+                        Image(
+                            painter = painterResource(R.drawable.icon_open),
+                            contentDescription = "open_icon",
+                            modifier = Modifier.size(24.dp).align(Alignment.CenterHorizontally)
+                        )
+                        Text(
+                            text = "My expense",
+                            fontSize = 16.sp,
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                }
+            }
+        }
+        Box(Modifier.fillMaxWidth().wrapContentSize(Alignment.Center)){
+            Text(text = "Report (December)",
+               fontSize = 20.sp,
+                color = Color(0xFF735454),
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(bottom=30.dp))
+        }
+
+
+
+        // LazyColumn для отображения списка
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.spacedBy(25.dp),
+            horizontalAlignment = Alignment.CenterHorizontally // Центрируем элементы
+        ) {
+            items(budgetList) { item ->
+                // Каждый элемент списка
+                Box(
+                    modifier = Modifier
+                        .background(Color(0xFFFFA2A2), shape = RoundedCornerShape(20.dp))
+                        .width(300.dp)
+                        .height(130.dp)
+                        .align(Alignment.CenterHorizontally) // Центрируем Box внутри LazyColumn
+                ) {
+                    Column (modifier = Modifier.fillMaxSize().padding(start=7.dp),
+                        verticalArrangement = Arrangement.spacedBy(10.dp)){
+                        Box(Modifier.fillMaxWidth()) {
+                            Text(
+                                text = item.title,
+                                fontSize = 24.sp,
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier.align(Alignment.TopCenter)
+                            )
+                        }
+                        Column {
+                            Row {
+                                Text(
+                                    text = "Current: ",
+                                    fontSize = 18.sp
+                                )
+                                Spacer(modifier = Modifier.width(7.dp))
+                                Text(
+                                    text = item.Current.toString(),
+                                    fontSize = 18.sp
+                                )
+                            }
+                            Spacer(modifier = Modifier.height(10.dp))
+                            Row {
+                                Text(
+                                    text = "Last month: ",
+                                    fontSize = 18.sp
+                                )
+                                Spacer(modifier = Modifier.width(7.dp))
+                                Text(
+                                    text = item.LastMonth.toString(),
+                                    fontSize = 18.sp
+                                )
+                            }
+                        }
+
+                    }
+                }
+            }
+        }
     }
+
 }
 
 @Composable
