@@ -108,9 +108,29 @@ data class Budget(
     val LastMonth: Int,
 )
 
+//############################################################################
+//класс для хранения доходов
+//############################################################################
+data class Income(
+    val Amount: Int,
+    val Type: String,
+    val description: String,
+)
+
+//############################################################################
+//класс для хранения расходов
+//############################################################################
+data class Expense(
+    val Amount: Int,
+    val Type: String,
+    val description: String,
+)
+
+
 sealed class RoutesFinance(val route: String) {
     object CreateIncome : Routes("income")
     object CreateExpense : Routes("expense")
+    object pageOfIncome : Routes("pageofincome")
 }
 
 //############################################################################
@@ -160,6 +180,9 @@ fun NavHostContainer(
             }
             composable("expense") {
                 CreateExpense(navController)
+            }
+            composable("pageofincome"){
+                pageOfIncome(navController)
             }
 
         })
@@ -212,6 +235,16 @@ val targetsList = listOf(Targets("Food", 1500, 1000), Targets("Transport", 200, 
 val cashList = mutableListOf(200, 500, 800, 250)
 val sberbankList = mutableListOf(1000, 500, 9600, 1250)
 val centerinvestList = mutableListOf(321, 562, 856)
+
+val incomeList = mutableListOf(Income(200, "Cash", "Мама дала"), Income(500, "Cash", "Жора вернул"),
+    Income(250, "Cash", "Сдача на рынке"),
+    Income(1000, "Sberbank", "Оплатили урок Маша"), Income(500, "Sberbank", "Оплатили урок Света"),
+    Income(1250, "Sberbank", "Нет описания"),
+    Income(321, "Center-Invest", "Коля прислал"),  Income(9600, "Sberbank", "Папа прислал"),
+    Income(562, "Center-Invest", "Миша за принтер"),
+    Income(856, "Center-Invest", "Люда за обед"), Income(800, "Cash", "Оплатили урок Наталья"))
+
+
 
 val cashListex = mutableListOf(20, 50, 800, 250)
 val sberbankListex = mutableListOf(1000, 50, 900, 150)
@@ -395,6 +428,7 @@ fun CreateIncome(navController: NavController){
                     "Sberbank" -> sberbankList.add(Intamount.value)
                     "Center-Invest" -> centerinvestList.add(Intamount.value)
                 }
+                incomeList.add(Income(Intamount.value, bank.value, description.value))
                 updateBudgetList()
                 navController.navigate("route 2")
             }) {
@@ -480,9 +514,70 @@ fun CreateExpense(navController: NavController){
 }
 
 
+@Composable
+fun pageOfIncome(navController: NavController) {
+    Box(
+        Modifier.fillMaxSize().background(Color(0xFFFFFEFA))
+    ) {
+        LazyColumn(
+            modifier = Modifier.fillMaxSize().align(Alignment.Center),
+            verticalArrangement = Arrangement.spacedBy(25.dp),
+            horizontalAlignment = Alignment.CenterHorizontally // Центрируем элементы
+        ) {
+            items(incomeList) { item ->
+                // Каждый элемент списка
+                Box(
+                    modifier = Modifier
+                        .background(Color.White, shape = RoundedCornerShape(10.dp))
+                        .width(300.dp)
+                        .height(130.dp)
+                    ,
+                    contentAlignment = Alignment.Center // Центрируем содержимое Box внутри LazyColumn
+                ) {
+                    Column(
+                        modifier = Modifier.fillMaxSize().padding(start = 7.dp),
+                        verticalArrangement = Arrangement.Center, // Центрируем содержимое Column по вертикали
+                        horizontalAlignment = Alignment.CenterHorizontally // Центрируем содержимое Column по горизонтали
+                    ) {
+                        Box(Modifier.fillMaxWidth(),
+                            contentAlignment = Alignment.Center) {
+                            Text(
+                                text = item.Type,
+                                fontSize = 20.sp,
+                                color = Color(0xFF6C4444),
+                                textAlign = TextAlign.Center
+                            )
+                        }
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Spacer(modifier = Modifier.height(7.dp))
+                            Text(
+                                text = item.Amount.toString(),
+                                color = Color(0xFF6C4444),
+                                fontSize = 20.sp,
+                                textAlign = TextAlign.Center
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.width(7.dp))
+                        Text(
+                            text = item.description,
+                            color = Color(0xFF6C4444),
+                            fontSize = 20.sp,
+                            textAlign = TextAlign.Center
+                        )
+
+                    }
+                }
+            }
+        }
+    }
+}
+
 val budgetList = mutableListOf(Budget("Income for cash", cashList.sum(), 2500), Budget("Income for Sberbank", sberbankList.sum(), 12000),
     Budget("Income for Center-Invest", centerinvestList.sum(), 3006), Budget("Expense for cash", cashListex.sum(), 1500),
     Budget("Expense for Sberbank", sberbankListex.sum(), 10954), Budget("Expense for Center-Invest", centerinvestListex.sum(), 2296))
+
+
 
 fun updateBudgetList() {
     budgetList.clear() // Очистить текущий список
@@ -568,16 +663,23 @@ fun AnalyzeScreen(navController: NavController){
                             }
                         }
                         Spacer(modifier = Modifier.height(15.dp))
-                        Image(
-                            painter = painterResource(R.drawable.icon_open),
-                            contentDescription = "open_icon",
-                            modifier = Modifier.size(24.dp).align(Alignment.CenterHorizontally)
-                        )
-                        Text(
-                            text = "My income",
-                            fontSize = 16.sp,
-                            textAlign = TextAlign.Center
-                        )
+                        Box(Modifier.clickable(){
+                            navController.navigate(RoutesFinance.pageOfIncome.route)
+                        }) {
+                            Column {
+                                Image(
+                                    painter = painterResource(R.drawable.icon_open),
+                                    contentDescription = "open_icon",
+                                    modifier = Modifier.size(24.dp)
+                                        .align(Alignment.CenterHorizontally)
+                                )
+                                Text(
+                                    text = "My income",
+                                    fontSize = 16.sp,
+                                    textAlign = TextAlign.Center
+                                )
+                            }
+                        }
                     }
                 }
             }
