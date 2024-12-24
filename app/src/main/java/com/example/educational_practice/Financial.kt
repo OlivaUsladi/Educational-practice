@@ -158,6 +158,9 @@ fun NavHostContainer(
             composable("income") {
                 CreateIncome(navController)
             }
+            composable("expense") {
+                CreateExpense(navController)
+            }
 
         })
 }
@@ -334,7 +337,7 @@ fun CreateIncome(navController: NavController){
     val amount = remember { mutableStateOf("") }
     val Intamount = remember { mutableStateOf(0) }
     var errorFlag = remember{mutableStateOf(false)}
-    val bank = remember { mutableStateOf("") }
+    val bank = remember { mutableStateOf("Cash") }
     val banks = listOf("Cash", "Sberbank", "Center-Invest")
     val (selectedOption, onOptionSelected) = remember { mutableStateOf(banks[0]) }
 
@@ -390,7 +393,7 @@ fun CreateIncome(navController: NavController){
                 when (bank.value) {
                     "Cash" -> cashList.add(Intamount.value)
                     "Sberbank" -> sberbankList.add(Intamount.value)
-                    "Centerinvest" -> centerinvestList.add(Intamount.value)
+                    "Center-Invest" -> centerinvestList.add(Intamount.value)
                 }
                 updateBudgetList()
                 navController.navigate("route 2")
@@ -400,6 +403,82 @@ fun CreateIncome(navController: NavController){
         }
     }
 }
+
+
+
+@Composable
+fun CreateExpense(navController: NavController){
+    val description = remember { mutableStateOf("") }
+    val amount = remember { mutableStateOf("") }
+    val Intamount = remember { mutableStateOf(0) }
+    var errorFlag = remember{mutableStateOf(false)}
+    val bank = remember { mutableStateOf("Cash") }
+    val banks = listOf("Cash", "Sberbank", "Center-Invest")
+    val (selectedOption, onOptionSelected) = remember { mutableStateOf(banks[0]) }
+
+
+    Column(modifier = Modifier.fillMaxSize().background(Color(0xFFFFFEFA)).padding(top=80.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+        TextField(modifier = Modifier.height(60.dp),
+            value = description.value,
+            onValueChange = { description.value = it },
+            isError = errorFlag.value,
+            placeholder = {
+                Text(
+                    text = "Enter description",
+                    fontSize = 18.sp,
+                    textAlign = TextAlign.Center
+                )
+            })
+        Spacer(modifier = Modifier.height(25.dp))
+        TextField(modifier = Modifier.height(60.dp),
+            value = amount.value,
+            onValueChange = { amount.value = it },
+            isError = errorFlag.value,
+            placeholder = {
+                Text(
+                    text = "Enter amount",
+                    fontSize = 18.sp,
+                    textAlign = TextAlign.Center
+                )
+            })
+        Spacer(modifier = Modifier.height(25.dp))
+        Column(Modifier.selectableGroup()) {
+            banks.forEach { text ->
+                Row( Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically)
+                {
+                    RadioButton(
+                        selected = (text == selectedOption),
+                        onClick = { onOptionSelected(text)
+                            bank.value = text
+                        }
+                    )
+                    Text( text = text, fontSize = 24.sp )
+                }
+            }
+        }
+        Row (modifier = Modifier.padding(top=70.dp)){
+            Button(onClick = {
+                navController.navigate("route 2")
+            }) {
+                Text("Cancel")
+            }
+            Spacer(modifier = Modifier.width(30.dp))
+            Button(onClick = {
+                Intamount.value = amount.value.toInt()
+                when (bank.value) {
+                    "Cash" -> cashListex.add(Intamount.value)
+                    "Sberbank" -> sberbankListex.add(Intamount.value)
+                    "Center-Invest" -> centerinvestListex.add(Intamount.value)
+                }
+                updateBudgetList()
+                navController.navigate("route 2")
+            }) {
+                Text("Send")
+            }
+        }
+    }
+}
+
 
 val budgetList = mutableListOf(Budget("Income for cash", cashList.sum(), 2500), Budget("Income for Sberbank", sberbankList.sum(), 12000),
     Budget("Income for Center-Invest", centerinvestList.sum(), 3006), Budget("Expense for cash", cashListex.sum(), 1500),
@@ -420,7 +499,6 @@ fun updateBudgetList() {
 fun AnalyzeScreen(navController: NavController){
 
     Column(modifier = Modifier.fillMaxSize().background(Color(0xFFFFFEFA))) {
-        // Верхняя часть экрана аналогична вашему коду
         Box(Modifier.fillMaxWidth().height(150.dp).background(Color.White)) {
             Row(modifier = Modifier.padding(top = 50.dp, start = 30.dp)) {
                 Image(painter = painterResource(R.drawable.img),
@@ -510,16 +588,23 @@ fun AnalyzeScreen(navController: NavController){
             ) {
                 Box(Modifier.padding(end = 15.dp).wrapContentWidth(Alignment.CenterHorizontally)) {
                     Column {
-                        Image(
-                            painter = painterResource(R.drawable.icon_add),
-                            contentDescription = "add_icon",
-                            modifier = Modifier.size(24.dp).align(Alignment.CenterHorizontally)
-                        )
-                        Text(
-                            text = "Add expense",
-                            fontSize = 16.sp,
-                            textAlign = TextAlign.Center
-                        )
+                        Box(Modifier.clickable(){
+                            navController.navigate(RoutesFinance.CreateExpense.route)
+                        }) {
+                            Column {
+                                Image(
+                                    painter = painterResource(R.drawable.icon_add),
+                                    contentDescription = "add_icon",
+                                    modifier = Modifier.size(24.dp)
+                                        .align(Alignment.CenterHorizontally)
+                                )
+                                Text(
+                                    text = "Add expense",
+                                    fontSize = 16.sp,
+                                    textAlign = TextAlign.Center
+                                )
+                            }
+                        }
                         Spacer(modifier = Modifier.height(15.dp))
                         Image(
                             painter = painterResource(R.drawable.icon_open),
