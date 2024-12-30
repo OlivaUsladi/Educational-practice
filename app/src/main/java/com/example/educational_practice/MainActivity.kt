@@ -200,8 +200,10 @@ fun AuthorizationScreen(navController: NavController){
                 fontSize = 24.sp)
         }
         Button(onClick = {
-            //здесь будет проверка данных
-            if (userList.contains("${login.value} ${password.value}")) {
+            val loginPasswordCheck = "${login.value} ${password.value}"
+            val passwordEmailCheck = "${password.value} ${login.value}"  // Предполагаем, что email это всегда 3-е поле
+
+            if (userList.any { it.startsWith(loginPasswordCheck) || it.split(" ").getOrNull(2)?.let {  "${password.value} ${it}" == passwordEmailCheck } == true }) {
                 val intent = Intent(context, Financial::class.java)
                 context.startActivity(intent)
             }else{
