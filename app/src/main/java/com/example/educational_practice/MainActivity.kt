@@ -2,6 +2,7 @@ package com.example.educational_practice
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -68,12 +69,14 @@ sealed class Routes(val route: String) {
 }
 
 
+
 @Composable
 fun RegistrationScreen(navController: NavController) {
     var login = remember { mutableStateOf("") }
     var password = remember { mutableStateOf("") }
     var email = remember { mutableStateOf("") }
     val context = LocalContext.current
+    flag.value=1
     Column (modifier = Modifier.fillMaxSize().background(Color(0xFFFFFEFA))) {
         Image(painter = painterResource(R.drawable.img),
             contentDescription = "logo",
@@ -92,47 +95,48 @@ fun RegistrationScreen(navController: NavController) {
             )
         }
         Box(Modifier.fillMaxWidth().align(Alignment.CenterHorizontally)) {
-            TextField(modifier = Modifier.padding(top = 150.dp).align(Alignment.Center).height(40.dp),
+            TextField(modifier = Modifier.padding(top = 150.dp).align(Alignment.Center).height(60.dp),
                 value = email.value,
                 onValueChange = { email.value = it },
-                label = {
+                placeholder = {
                     Text(
                         text = "Enter email",
-                        fontSize = 24.sp,
+                        fontSize = 18.sp,
                         textAlign = TextAlign.Center
                     )
                 })
         }
         Box(Modifier.fillMaxWidth().align(Alignment.CenterHorizontally)) {
-            TextField(modifier = Modifier.padding(top = 50.dp).align(Alignment.Center).height(40.dp),
+            TextField(modifier = Modifier.padding(top = 25.dp).align(Alignment.Center).height(60.dp),
                 value = login.value,
                 onValueChange = { login.value = it },
-                label = {
+                placeholder = {
                     Text(
                         text = "Enter login",
-                        fontSize = 24.sp,
+                        fontSize = 18.sp,
                         textAlign = TextAlign.Center
                     )
                 })
         }
         Box(Modifier.fillMaxWidth().align(Alignment.CenterHorizontally)) {
-            TextField(modifier = Modifier.padding(top=50.dp).align(Alignment.Center).height(40.dp),
+            TextField(modifier = Modifier.padding(top=25.dp).align(Alignment.Center).height(60.dp),
                 value = password.value,
                 onValueChange = {password.value = it},
-                label = { Text(text = "Enter password", fontSize = 24.sp, textAlign = TextAlign.Center) })
+                placeholder = { Text(text = "Enter password", fontSize = 18.sp, textAlign = TextAlign.Center) })
         }
         Box(Modifier.fillMaxWidth().align(Alignment.CenterHorizontally)){
             Text(text = "Authorization",
                 color = Color(0xFFA47676),
                 modifier = Modifier.align(Alignment.Center).padding(top=40.dp).clickable(){
                     navController.navigate(Routes.Authorization.route)
-                    /*val intent = Intent(context, Financial::class.java)
-                    context.startActivity(intent)*/
+
                 },
                 fontSize = 24.sp)
         }
         Button(onClick = {
             //здесь будет ввод данных
+            val userstr = "${email.value} ${password.value} ${login.value}"
+            users.add(userstr)
             navController.navigate(Routes.Authorization.route)
         },
             modifier = Modifier.padding(top=20.dp).align(Alignment.CenterHorizontally).width(150.dp),
@@ -143,6 +147,9 @@ fun RegistrationScreen(navController: NavController) {
     }
 }
 
+var users = mutableListOf<String>()
+val flag = mutableStateOf(0)
+
 @Composable
 fun AuthorizationScreen(navController: NavController){
     val context = LocalContext.current
@@ -150,6 +157,11 @@ fun AuthorizationScreen(navController: NavController){
     var password = remember { mutableStateOf("") }
     var errorFlag = remember{mutableStateOf(false)}
     val userList: Array<String> = stringArrayResource(id =R.array.users )
+
+   if (flag.value==0){
+       users.addAll(userList)
+    }
+
     Column (modifier = Modifier.fillMaxSize().background(Color(0xFFFFFEFA))) {
         Image(painter = painterResource(R.drawable.img),
             contentDescription = "logo",
@@ -203,7 +215,7 @@ fun AuthorizationScreen(navController: NavController){
             val loginPasswordCheck = "${login.value} ${password.value}"
             val passwordEmailCheck = "${password.value} ${login.value}"  // Предполагаем, что email это всегда 3-е поле
 
-            if (userList.any { it.startsWith(loginPasswordCheck) || it.split(" ").getOrNull(2)?.let {  "${password.value} ${it}" == passwordEmailCheck } == true }) {
+            if (users.any { it.startsWith(loginPasswordCheck) || it.split(" ").getOrNull(2)?.let {  "${password.value} ${it}" == passwordEmailCheck } == true }) {
                 val intent = Intent(context, Financial::class.java)
                 context.startActivity(intent)
             }else{
