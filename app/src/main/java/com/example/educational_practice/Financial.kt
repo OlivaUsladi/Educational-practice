@@ -29,16 +29,26 @@ import androidx.compose.material.BottomNavigation
 import androidx.compose.material.BottomNavigationItem
 import androidx.compose.material.Icon
 import androidx.compose.material.Surface
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.Button
+import androidx.compose.material3.DrawerValue
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalDrawerSheet
+import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
@@ -55,15 +65,18 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.educational_practice.ui.theme.EducationalpracticeTheme
+import kotlinx.coroutines.launch
 
 class Financial : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            val navController = rememberNavController()
+            var navController = rememberNavController()
             Surface() {
                 Scaffold (
+                    topBar = { com.example.educational_practice.TopAppBar(navController =
+                    navController)},
                     bottomBar = {
                         BottomNavigationBar(navController =
                         navController)
@@ -233,6 +246,81 @@ fun BottomNavigationBar(navController: NavController) {
     }
 }
 
+
+
+//============================================================================
+//TopAppBar реализация
+//============================================================================
+@Composable
+fun TopAppBar(navController: NavController) {
+    val items = listOf("Finance", "Recipes", "Tips")
+    val selectedItem = remember { mutableStateOf(items[0]) }
+    val drawerState = rememberDrawerState(DrawerValue.Closed)
+    val scope = rememberCoroutineScope()
+
+
+    Box(Modifier.fillMaxWidth().height(if (drawerState.isOpen) 250.dp else 150.dp)) {
+        ModalNavigationDrawer(
+            drawerState = drawerState,
+            drawerContent = {
+                ModalDrawerSheet( modifier = when (drawerState.isOpen) {
+                    true -> Modifier.fillMaxSize()
+                    else -> Modifier.width(5.dp)
+                }){
+                    items.forEach { item ->
+                        TextButton(
+                            onClick = {
+                                scope.launch { drawerState.close() }
+                                selectedItem.value = item
+                            },
+                        ) { Text(item, fontSize = 22.sp) }
+                    }
+                }
+            },
+            content={
+                Box(Modifier.fillMaxWidth().height(150.dp).background(Color.White)) {
+                    Row(modifier = Modifier.padding(top = 50.dp, start = 30.dp)) {
+                        Image(
+                            painter = painterResource(R.drawable.img),
+                            contentDescription = "logo",
+                            modifier = Modifier.size(70.dp)
+                        )
+                        Box(Modifier.padding(top = 25.dp, start = 25.dp)) {
+                            Text(
+                                text = "The Road to adulthood",
+                                color = Color(0xFFA47676),
+                                modifier = Modifier.align(Alignment.Center),
+                                fontSize = 20.sp
+                            )
+                        }
+                        Column(modifier = Modifier.padding(top = 25.dp, start = 30.dp)) {
+                            Box(Modifier.padding(start = 5.dp).clickable() {
+                                scope.launch { drawerState.open() }
+                            }) {
+                                Image(
+                                    painter = painterResource(R.drawable.icon_menu),
+                                    contentDescription = "menu",
+                                    modifier = Modifier.size(24.dp)
+                                )
+                            }
+                            Box {
+                                Text(
+                                    text = "menu",
+                                    color = Color(0xFF79747E),
+                                    fontSize = 14.sp
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        )
+    }
+
+}
+
+
+
 val targetsList = listOf(Targets("Food", 1500, 1000), Targets("Transport", 200, 200),
     Targets("Coffee", 1000, 1500), Targets("Entertainments", 3000, 1200))
 
@@ -269,33 +357,7 @@ fun TargetsScreen() {
 
 
     Column(modifier = Modifier.fillMaxSize().background(Color(0xFFFFFEFA))) {
-        Box(Modifier.fillMaxWidth().height(150.dp).background(Color.White)) {
-            Row(modifier = Modifier.padding(top = 50.dp, start = 30.dp)) {
-                Image(painter = painterResource(R.drawable.img),
-                    contentDescription = "logo",
-                    modifier = Modifier.size(70.dp))
-                Box(Modifier.padding(top = 25.dp, start = 25.dp)) {
-                    Text(text = "The Road to adulthood",
-                        color = Color(0xFFA47676),
-                        modifier = Modifier.align(Alignment.Center),
-                        fontSize = 20.sp)
-                }
-                Column(modifier = Modifier.padding(top = 25.dp, start = 30.dp)) {
-                    Box(Modifier.padding(start = 5.dp)) {
-                        Image(
-                            painter = painterResource(R.drawable.icon_menu),
-                            contentDescription = "menu",
-                            modifier = Modifier.size(24.dp)
-                        )
-                    }
-                    Box {
-                        Text(text = "menu",
-                            color = Color(0xFF79747E),
-                            fontSize = 14.sp)
-                    }
-                }
-            }
-        }
+
 
         Box(Modifier.fillMaxWidth().wrapContentSize(Alignment.Center)) {
             Row {
@@ -806,7 +868,7 @@ fun AnalyzeScreen(navController: NavController){
             }
         }
         Box(Modifier.fillMaxWidth().wrapContentSize(Alignment.Center)){
-            Text(text = "Report (December)",
+            Text(text = "Report (January)",
                fontSize = 20.sp,
                 color = Color(0xFF735454),
                 textAlign = TextAlign.Center,
