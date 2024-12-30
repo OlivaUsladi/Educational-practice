@@ -131,6 +131,7 @@ sealed class RoutesFinance(val route: String) {
     object CreateIncome : Routes("income")
     object CreateExpense : Routes("expense")
     object pageOfIncome : Routes("pageofincome")
+    object pageOfExpense : Routes("pageofexpense")
 }
 
 //############################################################################
@@ -183,6 +184,9 @@ fun NavHostContainer(
             }
             composable("pageofincome"){
                 pageOfIncome(navController)
+            }
+            composable("pageofexpense"){
+                pageOfExpense(navController)
             }
 
         })
@@ -243,6 +247,16 @@ val incomeList = mutableListOf(Income(200, "Cash", "Мама дала"), Income(
     Income(321, "Center-Invest", "Коля прислал"),  Income(9600, "Sberbank", "Папа прислал"),
     Income(562, "Center-Invest", "Миша за принтер"),
     Income(856, "Center-Invest", "Люда за обед"), Income(800, "Cash", "Оплатили урок Наталья"))
+
+
+val expenseList = mutableListOf(Expense(20, "Cash", "пожертвовал"), Expense(50, "Cash", "пирожок"),
+    Expense(800, "Cash", "купил хурму"),
+    Expense(1000, "Sberbank", "На вайлдбериз"), Expense(50, "Sberbank", "платный туалет"),
+    Expense(900, "Sberbank", "Обед в кафе"),
+    Expense(21, "Center-Invest", "вода"),  Expense(150, "Sberbank", "Вале"),
+    Expense(562, "Center-Invest", "Миша принтер"),
+    Expense(856, "Center-Invest", "торт"), Expense(250, "Cash", "яблоки"))
+
 
 
 
@@ -504,6 +518,7 @@ fun CreateExpense(navController: NavController){
                     "Sberbank" -> sberbankListex.add(Intamount.value)
                     "Center-Invest" -> centerinvestListex.add(Intamount.value)
                 }
+                expenseList.add(Expense(Intamount.value, bank.value, description.value))
                 updateBudgetList()
                 navController.navigate("route 2")
             }) {
@@ -572,6 +587,67 @@ fun pageOfIncome(navController: NavController) {
         }
     }
 }
+
+
+@Composable
+fun pageOfExpense(navController: NavController) {
+    Box(
+        Modifier.fillMaxSize().background(Color(0xFFFFFEFA))
+    ) {
+        LazyColumn(
+            modifier = Modifier.fillMaxSize().align(Alignment.Center),
+            verticalArrangement = Arrangement.spacedBy(25.dp),
+            horizontalAlignment = Alignment.CenterHorizontally // Центрируем элементы
+        ) {
+            items(expenseList) { item ->
+                // Каждый элемент списка
+                Box(
+                    modifier = Modifier
+                        .background(Color.White, shape = RoundedCornerShape(10.dp))
+                        .width(300.dp)
+                        .height(130.dp)
+                    ,
+                    contentAlignment = Alignment.Center // Центрируем содержимое Box внутри LazyColumn
+                ) {
+                    Column(
+                        modifier = Modifier.fillMaxSize().padding(start = 7.dp),
+                        verticalArrangement = Arrangement.Center, // Центрируем содержимое Column по вертикали
+                        horizontalAlignment = Alignment.CenterHorizontally // Центрируем содержимое Column по горизонтали
+                    ) {
+                        Box(Modifier.fillMaxWidth(),
+                            contentAlignment = Alignment.Center) {
+                            Text(
+                                text = item.Type,
+                                fontSize = 20.sp,
+                                color = Color(0xFF6C4444),
+                                textAlign = TextAlign.Center
+                            )
+                        }
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Spacer(modifier = Modifier.height(7.dp))
+                            Text(
+                                text = item.Amount.toString(),
+                                color = Color(0xFF6C4444),
+                                fontSize = 20.sp,
+                                textAlign = TextAlign.Center
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.width(7.dp))
+                        Text(
+                            text = item.description,
+                            color = Color(0xFF6C4444),
+                            fontSize = 20.sp,
+                            textAlign = TextAlign.Center
+                        )
+
+                    }
+                }
+            }
+        }
+    }
+}
+
 
 val budgetList = mutableListOf(Budget("Income for cash", cashList.sum(), 2500), Budget("Income for Sberbank", sberbankList.sum(), 12000),
     Budget("Income for Center-Invest", centerinvestList.sum(), 3006), Budget("Expense for cash", cashListex.sum(), 1500),
@@ -708,16 +784,23 @@ fun AnalyzeScreen(navController: NavController){
                             }
                         }
                         Spacer(modifier = Modifier.height(15.dp))
-                        Image(
-                            painter = painterResource(R.drawable.icon_open),
-                            contentDescription = "open_icon",
-                            modifier = Modifier.size(24.dp).align(Alignment.CenterHorizontally)
-                        )
-                        Text(
-                            text = "My expense",
-                            fontSize = 16.sp,
-                            textAlign = TextAlign.Center
-                        )
+                        Box(Modifier.clickable(){
+                            navController.navigate(RoutesFinance.pageOfExpense.route)
+                        }) {
+                            Column {
+                                Image(
+                                    painter = painterResource(R.drawable.icon_open),
+                                    contentDescription = "open_icon",
+                                    modifier = Modifier.size(24.dp)
+                                        .align(Alignment.CenterHorizontally)
+                                )
+                                Text(
+                                    text = "My expense",
+                                    fontSize = 16.sp,
+                                    textAlign = TextAlign.Center
+                                )
+                            }
+                        }
                     }
                 }
             }
