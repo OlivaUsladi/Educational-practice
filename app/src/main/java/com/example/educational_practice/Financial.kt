@@ -1,5 +1,6 @@
 package com.example.educational_practice
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -53,6 +54,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -257,6 +259,9 @@ fun TopAppBar(navController: NavController) {
     val selectedItem = remember { mutableStateOf(items[0]) }
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
+    val context = LocalContext.current
+    val intentrec = Intent(context, Recipes::class.java)
+    val intenttips = Intent(context, Tips::class.java)
 
 
     Box(Modifier.fillMaxWidth().height(if (drawerState.isOpen) 250.dp else 150.dp)) {
@@ -269,6 +274,11 @@ fun TopAppBar(navController: NavController) {
                             onClick = {
                                 scope.launch { drawerState.close() }
                                 selectedItem.value = item
+                                when (selectedItem.value){
+                                    "Finance" -> navController.navigate("route 1")
+                                    "Recipes" -> context.startActivity(intentrec)
+                                    "Tips" -> context.startActivity(intenttips)
+                                }
                             },
                         ) { Text(item, fontSize = 22.sp) }
                     }

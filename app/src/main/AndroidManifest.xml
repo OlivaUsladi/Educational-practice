@@ -13,12 +13,17 @@
         android:theme="@style/Theme.Educationalpractice"
         tools:targetApi="31">
         <activity
-            android:name=".Financial"
+            android:name=".Tips"
             android:exported="false"
-            android:label="@string/title_activity_financial"
+            android:label="@string/title_activity_tips"
             android:theme="@style/Theme.Educationalpractice" />
         <activity
-            android:name=".ui.theme.Financial"
+            android:name=".Recipes"
+            android:exported="false"
+            android:label="@string/title_activity_recipes"
+            android:theme="@style/Theme.Educationalpractice" />
+        <activity
+            android:name=".Financial"
             android:exported="false"
             android:label="@string/title_activity_financial"
             android:theme="@style/Theme.Educationalpractice" />
