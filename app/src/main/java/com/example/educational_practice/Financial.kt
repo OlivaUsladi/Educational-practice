@@ -2,6 +2,7 @@ package com.example.educational_practice
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -24,6 +25,7 @@ import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.BottomNavigation
@@ -60,6 +62,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.ViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -110,8 +113,8 @@ data class BottomNavItem(
 //############################################################################
 data class Targets(
     val title: String,
-    val Target: Int,
-    val Current: Int,
+    var Target: Int,
+    var Current: Int,
 )
 
 //############################################################################
@@ -147,6 +150,7 @@ sealed class RoutesFinance(val route: String) {
     object CreateExpense : Routes("expense")
     object pageOfIncome : Routes("pageofincome")
     object pageOfExpense : Routes("pageofexpense")
+    object changeTarget : Routes("changeTarget")
 }
 
 //############################################################################
@@ -183,7 +187,7 @@ fun NavHostContainer(
         modifier = Modifier.padding(paddingValues = padding),
         builder = {
             composable("route 1") {
-                TargetsScreen()
+                TargetsScreen(navController)
             }
             composable("route 2") {
                 AnalyzeScreen(navController)
@@ -202,6 +206,16 @@ fun NavHostContainer(
             }
             composable("pageofexpense"){
                 pageOfExpense(navController)
+            }
+            composable(RoutesFinance.changeTarget.route + "/{oldtarget}" + "/{oldcurrent}" + "/{index}") { stackEntry ->
+
+                val oldtarget = stackEntry.arguments?.getString("oldtarget")
+                val oldcurrent = stackEntry.arguments?.getString("oldcurrent")
+                val index = stackEntry.arguments?.getString("index")
+
+                changeTarget(navController, oldtarget.toString(), oldcurrent.toString(),
+                    index.toString()
+                )
             }
 
         })
@@ -328,7 +342,7 @@ fun TopAppBar(navController: NavController) {
 
 
 
-val targetsList = listOf(Targets("Food", 1500, 1000), Targets("Transport", 200, 200),
+val targetsList = mutableListOf(Targets("Food", 1500, 1000), Targets("Transport", 200, 200),
     Targets("Coffee", 1000, 1500), Targets("Entertainments", 3000, 1200))
 
 val cashList = mutableListOf(200, 500, 800, 250)
@@ -359,13 +373,17 @@ val cashListex = mutableListOf(20, 50, 800, 250)
 val sberbankListex = mutableListOf(1000, 50, 900, 150)
 val centerinvestListex = mutableListOf(21, 562, 856)
 
+/*****************************************************************************************/
+//Класс для обновленния LazyColumn
+/*****************************************************************************************/
+class targetViewModel:ViewModel(){
+
+}
+
+
 @Composable
-fun TargetsScreen() {
-
-
+fun TargetsScreen(navController: NavController) {
     Column(modifier = Modifier.fillMaxSize().background(Color(0xFFFFFEFA))) {
-
-
         Box(Modifier.fillMaxWidth().wrapContentSize(Alignment.Center)) {
             Row {
                 Image(
@@ -380,14 +398,12 @@ fun TargetsScreen() {
             }
         }
 
-        // LazyColumn для отображения списка
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.spacedBy(25.dp),
             horizontalAlignment = Alignment.CenterHorizontally // Центрируем элементы
         ) {
-            items(targetsList) { item ->
-                // Каждый элемент списка
+            itemsIndexed(targetsList) { index, item ->
                 Box(
                     modifier = Modifier
                         .background(Color(0xFFFFF3F3), shape = RoundedCornerShape(20.dp))
@@ -430,7 +446,10 @@ fun TargetsScreen() {
                                 fontSize = 18.sp)
                         }
                         //Сделать эту хрень кликабельной
-                        Box(Modifier.fillMaxWidth().padding(top=5.dp)) {
+                        Box(Modifier.fillMaxWidth().padding(top=5.dp).clickable(){
+                            navController.navigate(RoutesFinance.changeTarget.route + "/${item.Target}" + "/${item.Current}"+
+                                    "/${index.toString()}")
+                        }) {
                             Text(
                                 text = "Change",
                                 fontSize = 20.sp,
@@ -446,6 +465,118 @@ fun TargetsScreen() {
     }
 }
 
+
+@Composable
+fun changeTarget(navController: NavController, oldtarget:String, oldcurrent: String, index: String){
+    val target = remember { mutableStateOf(oldtarget) }
+    val current =  remember { mutableStateOf(oldcurrent) }
+    val plus =  remember { mutableStateOf("") }
+    val minus =  remember { mutableStateOf("") }
+    val i = index.toInt()
+
+    val Inttarget = remember { mutableStateOf(0) }
+    val Intcurrent =  remember { mutableStateOf(0) }
+    val Intplus =  remember { mutableStateOf(0) }
+    val Intminus =  remember { mutableStateOf(0) }
+    Column(modifier = Modifier.fillMaxSize().background(Color(0xFFFFFEFA)).padding(top=80.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+        TextField(modifier = Modifier.height(60.dp),
+            value = target.value,
+            onValueChange = { target.value = it },
+            //isError = errorFlag.value,
+            placeholder = {
+                Text(
+                    text = "Enter Target",
+                    fontSize = 18.sp,
+                    textAlign = TextAlign.Center
+                )
+            })
+        Spacer(modifier = Modifier.height(25.dp))
+        TextField(modifier = Modifier.height(60.dp),
+            value = current.value,
+            onValueChange = { current.value = it },
+            //isError = errorFlag.value,
+            placeholder = {
+                Text(
+                    text = "Enter Current amount",
+                    fontSize = 18.sp,
+                    textAlign = TextAlign.Center
+                )
+            })
+        Spacer(modifier = Modifier.height(25.dp))
+
+            TextField(modifier = Modifier.height(60.dp),
+                value = plus.value,
+                onValueChange = { plus.value = it },
+                //isError = errorFlag.value,
+                placeholder = {
+                    Text(
+                        text = "Add to current",
+                        fontSize = 14.sp,
+                        textAlign = TextAlign.Center
+                    )
+                })
+        Spacer(modifier = Modifier.height(25.dp))
+            TextField(modifier = Modifier.height(60.dp),
+                value = minus.value,
+                onValueChange = { minus.value = it },
+                //isError = errorFlag.value,
+                placeholder = {
+                    Text(
+                        text = "Subtract from the current",
+                        fontSize = 14.sp,
+                        textAlign = TextAlign.Center
+                    )
+                })
+
+        Spacer(modifier = Modifier.height(25.dp))
+
+        Row (modifier = Modifier.padding(top=70.dp)){
+            Button(onClick = {
+                navController.navigate("route 1")
+            }) {
+                Text("Cancel")
+            }
+            Spacer(modifier = Modifier.width(30.dp))
+            Button(onClick = {
+                if (current.value!=""){
+                    Intcurrent.value = current.value.toInt()
+                    targetsList[i].Current = Intcurrent.value
+                }
+                if (target.value!=""){
+                    Inttarget.value = target.value.toInt()
+                    targetsList[i].Target = Inttarget.value
+                }
+                if (plus.value!=""){
+                    Intplus.value = plus.value.toInt()
+                    targetsList[i].Current = targetsList[i].Current + Intplus.value
+                }
+                if (minus.value!=""){
+                    Intminus.value = minus.value.toInt()
+                    if (targetsList[i].Current > Intminus.value){
+                        targetsList[i].Current = targetsList[i].Current - Intminus.value
+                    }
+                    else{
+                        targetsList[i].Current = 0
+                    }
+                }
+
+                updateTargetList()
+                navController.navigate("route 1")
+            }) {
+                Text("Send")
+            }
+        }
+    }
+}
+
+fun updateTargetList() {
+    val newTargetsList = targetsList.toMutableList()
+    targetsList.clear() // Очистить текущий список
+    targetsList.addAll(newTargetsList)
+    targetsList.forEach{
+        targ -> Log.i("TAG", targ.Current.toString())
+    }
+}
 
 @Composable
 fun CreateIncome(navController: NavController){
