@@ -144,6 +144,14 @@ data class Expense(
     val description: String,
 )
 
+//############################################################################
+//класс для хранения лимитов
+//############################################################################
+data class Limits(
+    val title: String,
+    var Limit: Int,
+    var Current: Int,
+)
 
 sealed class RoutesFinance(val route: String) {
     object CreateIncome : Routes("income")
@@ -193,7 +201,7 @@ fun NavHostContainer(
                 AnalyzeScreen(navController)
             }
             composable("route 3") {
-                LimitsScreen()
+                LimitsScreen(navController)
             }
             composable("income") {
                 CreateIncome(navController)
@@ -979,7 +987,7 @@ fun AnalyzeScreen(navController: NavController){
             }
         }
         Box(Modifier.fillMaxWidth().wrapContentSize(Alignment.Center)){
-            Text(text = "Report (January)",
+            Text(text = "Report (December)",
                fontSize = 20.sp,
                 color = Color(0xFF735454),
                 textAlign = TextAlign.Center,
@@ -1047,9 +1055,92 @@ fun AnalyzeScreen(navController: NavController){
 
 }
 
-@Composable
-fun LimitsScreen(){
-    Column (modifier = Modifier.fillMaxSize().background(Color(0xFFFFFEFA))) {
+val limitsList = mutableListOf(Limits("Одолжить", 2000, 200), Limits("Хобби", 3000, 1240),
+    Limits("Кофе", 1000, 1500), Limits("Кафе", 2300, 1200))
 
+
+@Composable
+fun LimitsScreen(navController: NavController){
+    Column(modifier = Modifier.fillMaxSize().background(Color(0xFFFFFEFA))) {
+        Box(Modifier.fillMaxWidth().wrapContentSize(Alignment.Center)) {
+            Row {
+                Image(
+                    painter = painterResource(R.drawable.icon_wallet),
+                    contentDescription = "wallet",
+                    modifier = Modifier.size(24.dp)
+                )
+                Text(text = "Finance",
+                    fontSize = 24.sp,
+                    color = Color(0xFFA47676),
+                    modifier = Modifier.padding(start = 5.dp, bottom = 30.dp))
+            }
+        }
+
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.spacedBy(25.dp),
+            horizontalAlignment = Alignment.CenterHorizontally // Центрируем элементы
+        ) {
+            itemsIndexed(limitsList) { index, item ->
+                var limit = item.Limit-item.Current
+                Box(
+                    modifier = Modifier
+                        .background(if (limit>0){ Color(0xFFE1D7D7)} else if (limit==0){Color(0xFFD7E1D7)} else {Color(0xFFCD4A4A)}, shape = RoundedCornerShape(20.dp))
+                        .width(300.dp)
+                        .height(150.dp)
+                        .align(Alignment.CenterHorizontally) // Центрируем Box внутри LazyColumn
+                ) {
+
+                    Column (modifier = Modifier.fillMaxSize().padding(start=7.dp),
+                        verticalArrangement = Arrangement.spacedBy(10.dp)){
+                        Box(Modifier.fillMaxWidth()) {
+                            Text(
+                                text = item.title,
+                                fontSize = 24.sp,
+                                color = Color(0xFF8E7171),
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier.align(Alignment.TopCenter)
+                            )
+                        }
+                        Row {
+                            Text(text = "Limit: ",
+                                fontSize = 18.sp)
+                            Spacer(modifier = Modifier.width(7.dp))
+                            Text(text = item.Limit.toString(),
+                                fontSize = 18.sp)
+                        }
+                        Row {
+                            Text(text = "Current: ",
+                                fontSize = 18.sp)
+                            Spacer(modifier = Modifier.width(7.dp))
+                            Text(text = item.Current.toString(),
+                                fontSize = 18.sp)
+                            Spacer(modifier = Modifier.width(10.dp))
+                            Text(text = "Left: ",
+                                fontSize = 18.sp)
+                            Spacer(modifier = Modifier.width(7.dp))
+                            if (limit<0){
+                                limit=0
+                            }
+                            Text(text = limit.toString(),
+                                fontSize = 18.sp)
+                        }
+                        //Сделать эту хрень кликабельной
+                        Box(Modifier.fillMaxWidth().padding(top=5.dp).clickable(){
+                            /*navController.navigate(RoutesFinance.changeTarget.route + "/${item.Target}" + "/${item.Current}"+
+                                    "/${index.toString()}")*/
+                        }) {
+                            Text(
+                                text = "Change",
+                                fontSize = 20.sp,
+                                color = Color(0xFFE68DF4),
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier.align(Alignment.TopCenter)
+                            )
+                        }
+                    }
+                }
+            }
+        }
     }
 }
