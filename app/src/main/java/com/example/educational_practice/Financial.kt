@@ -161,6 +161,7 @@ sealed class RoutesFinance(val route: String) {
     object changeTarget : Routes("changeTarget")
     object changeLimit : Routes("changeLimit")
     object createTarget : Routes("createTarget")
+    object createLimit : Routes("createLimit")
 }
 
 //############################################################################
@@ -239,6 +240,9 @@ fun NavHostContainer(
             }
             composable("createTarget"){
                 createTarget(navController)
+            }
+            composable("createLimit"){
+                createLimit(navController)
             }
 
         })
@@ -1229,6 +1233,83 @@ fun LimitsScreen(navController: NavController){
                         }
                     }
                 }
+            }
+            item {
+                Box (Modifier.clickable(){
+                    navController.navigate(RoutesFinance.createLimit.route)
+                }){
+                    Row {
+                        Image(
+                            painter = painterResource(R.drawable.icon_add),
+                            contentDescription = "add",
+                            modifier = Modifier.size(24.dp)
+                        )
+                        Text(text = "Add",
+                            fontSize = 24.sp,
+                            color = Color(0xFFA47676),
+                            modifier = Modifier.padding(start = 5.dp, bottom = 30.dp))
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun createLimit(navController: NavController){
+    val limit = remember { mutableStateOf("")}
+    val title = remember { mutableStateOf("")}
+    val current = remember { mutableStateOf("")}
+    Column(modifier = Modifier.fillMaxSize().background(Color(0xFFFFFEFA)).padding(top=80.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+
+        TextField(modifier = Modifier.height(60.dp),
+            value = title.value,
+            onValueChange = { title.value = it },
+            //isError = errorFlag.value,
+            placeholder = {
+                Text(
+                    text = "Enter Title",
+                    fontSize = 18.sp,
+                    textAlign = TextAlign.Center
+                )
+            })
+        Spacer(modifier = Modifier.height(25.dp))
+        TextField(modifier = Modifier.height(60.dp),
+            value = limit.value,
+            onValueChange = { limit.value = it },
+            //isError = errorFlag.value,
+            placeholder = {
+                Text(
+                    text = "Enter Limit",
+                    fontSize = 18.sp,
+                    textAlign = TextAlign.Center
+                )
+            })
+        Spacer(modifier = Modifier.height(25.dp))
+        TextField(modifier = Modifier.height(60.dp),
+            value = current.value,
+            onValueChange = { current.value = it },
+            //isError = errorFlag.value,
+            placeholder = {
+                Text(
+                    text = "Enter Current amount",
+                    fontSize = 18.sp,
+                    textAlign = TextAlign.Center
+                )
+            })
+        Spacer(modifier = Modifier.height(25.dp))
+        Row(modifier = Modifier.padding(top = 70.dp)) {
+            Button(onClick = {
+                navController.navigate("route 3")
+            }) {
+                Text("Cancel")
+            }
+            Spacer(modifier = Modifier.width(30.dp))
+            Button(onClick = {
+                limitsList.add(Limits(title.value, limit.value.toInt(), current.value.toInt()))
+                navController.navigate("route 3")
+            }) {
+                Text("Send")
             }
         }
     }
