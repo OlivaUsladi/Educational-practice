@@ -159,6 +159,8 @@ sealed class RoutesFinance(val route: String) {
     object pageOfIncome : Routes("pageofincome")
     object pageOfExpense : Routes("pageofexpense")
     object changeTarget : Routes("changeTarget")
+    object changeLimit : Routes("changeLimit")
+    object createTarget : Routes("createTarget")
 }
 
 //############################################################################
@@ -224,6 +226,19 @@ fun NavHostContainer(
                 changeTarget(navController, oldtarget.toString(), oldcurrent.toString(),
                     index.toString()
                 )
+            }
+            composable(RoutesFinance.changeLimit.route + "/{oldlimit}" + "/{oldcurrent}" + "/{index}") { stackEntry ->
+
+                val oldlimit = stackEntry.arguments?.getString("oldlimit")
+                val oldcurrent = stackEntry.arguments?.getString("oldcurrent")
+                val index = stackEntry.arguments?.getString("index")
+
+                changeLimit(navController, oldlimit.toString(), oldcurrent.toString(),
+                    index.toString()
+                )
+            }
+            composable("createTarget"){
+                createTarget(navController)
             }
 
         })
@@ -415,7 +430,7 @@ fun TargetsScreen(navController: NavController) {
                 Box(
                     modifier = Modifier
                         .background(Color(0xFFFFF3F3), shape = RoundedCornerShape(20.dp))
-                        .width(300.dp)
+                        .width(320.dp)
                         .height(150.dp)
                         .align(Alignment.CenterHorizontally) // Центрируем Box внутри LazyColumn
                 ) {
@@ -469,10 +484,87 @@ fun TargetsScreen(navController: NavController) {
                     }
                 }
             }
+            item {
+                Box (Modifier.clickable(){
+                    navController.navigate(RoutesFinance.createTarget.route)
+                }){
+                    Row {
+                        Image(
+                            painter = painterResource(R.drawable.icon_add),
+                            contentDescription = "add",
+                            modifier = Modifier.size(24.dp)
+                        )
+                        Text(text = "Add",
+                            fontSize = 24.sp,
+                            color = Color(0xFFA47676),
+                            modifier = Modifier.padding(start = 5.dp, bottom = 30.dp))
+                    }
+                }
+            }
         }
     }
 }
 
+
+@Composable
+fun createTarget(navController: NavController){
+    val target = remember { mutableStateOf("")}
+    val title = remember { mutableStateOf("")}
+    val current = remember { mutableStateOf("")}
+    Column(modifier = Modifier.fillMaxSize().background(Color(0xFFFFFEFA)).padding(top=80.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+
+        TextField(modifier = Modifier.height(60.dp),
+            value = title.value,
+            onValueChange = { title.value = it },
+            //isError = errorFlag.value,
+            placeholder = {
+                Text(
+                    text = "Enter Title",
+                    fontSize = 18.sp,
+                    textAlign = TextAlign.Center
+                )
+            })
+        Spacer(modifier = Modifier.height(25.dp))
+        TextField(modifier = Modifier.height(60.dp),
+            value = target.value,
+            onValueChange = { target.value = it },
+            //isError = errorFlag.value,
+            placeholder = {
+                Text(
+                    text = "Enter Target",
+                    fontSize = 18.sp,
+                    textAlign = TextAlign.Center
+                )
+            })
+        Spacer(modifier = Modifier.height(25.dp))
+        TextField(modifier = Modifier.height(60.dp),
+            value = current.value,
+            onValueChange = { current.value = it },
+            //isError = errorFlag.value,
+            placeholder = {
+                Text(
+                    text = "Enter Current amount",
+                    fontSize = 18.sp,
+                    textAlign = TextAlign.Center
+                )
+            })
+        Spacer(modifier = Modifier.height(25.dp))
+        Row(modifier = Modifier.padding(top = 70.dp)) {
+            Button(onClick = {
+                navController.navigate("route 1")
+            }) {
+                Text("Cancel")
+            }
+            Spacer(modifier = Modifier.width(30.dp))
+            Button(onClick = {
+                targetsList.add(Targets(title.value, target.value.toInt(), current.value.toInt()))
+                navController.navigate("route 1")
+            }) {
+                Text("Send")
+            }
+        }
+    }
+}
 
 @Composable
 fun changeTarget(navController: NavController, oldtarget:String, oldcurrent: String, index: String){
@@ -581,9 +673,6 @@ fun updateTargetList() {
     val newTargetsList = targetsList.toMutableList()
     targetsList.clear() // Очистить текущий список
     targetsList.addAll(newTargetsList)
-    targetsList.forEach{
-        targ -> Log.i("TAG", targ.Current.toString())
-    }
 }
 
 @Composable
@@ -1127,13 +1216,13 @@ fun LimitsScreen(navController: NavController){
                         }
                         //Сделать эту хрень кликабельной
                         Box(Modifier.fillMaxWidth().padding(top=5.dp).clickable(){
-                            /*navController.navigate(RoutesFinance.changeTarget.route + "/${item.Target}" + "/${item.Current}"+
-                                    "/${index.toString()}")*/
+                            navController.navigate(RoutesFinance.changeLimit.route + "/${item.Limit}" + "/${item.Current}"+
+                                    "/${index.toString()}")
                         }) {
                             Text(
-                                text = "Change",
+                                text = "More",
                                 fontSize = 20.sp,
-                                color = Color(0xFFE68DF4),
+                                color = Color(0xFF754444),
                                 textAlign = TextAlign.Center,
                                 modifier = Modifier.align(Alignment.TopCenter)
                             )
@@ -1143,4 +1232,114 @@ fun LimitsScreen(navController: NavController){
             }
         }
     }
+}
+
+@Composable
+fun changeLimit(navController: NavController, oldlimit:String, oldcurrent: String, index: String){
+    val limit = remember { mutableStateOf(oldlimit) }
+    val current =  remember { mutableStateOf(oldcurrent) }
+    val plus =  remember { mutableStateOf("") }
+    val minus =  remember { mutableStateOf("") }
+    val i = index.toInt()
+
+    val Intlimit = remember { mutableStateOf(0) }
+    val Intcurrent =  remember { mutableStateOf(0) }
+    val Intplus =  remember { mutableStateOf(0) }
+    val Intminus =  remember { mutableStateOf(0) }
+    Column(modifier = Modifier.fillMaxSize().background(Color(0xFFFFFEFA)).padding(top=80.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+        TextField(modifier = Modifier.height(60.dp),
+            value = limit.value,
+            onValueChange = { limit.value = it },
+            //isError = errorFlag.value,
+            placeholder = {
+                Text(
+                    text = "Enter Limit",
+                    fontSize = 18.sp,
+                    textAlign = TextAlign.Center
+                )
+            })
+        Spacer(modifier = Modifier.height(25.dp))
+        TextField(modifier = Modifier.height(60.dp),
+            value = current.value,
+            onValueChange = { current.value = it },
+            //isError = errorFlag.value,
+            placeholder = {
+                Text(
+                    text = "Enter Current amount",
+                    fontSize = 18.sp,
+                    textAlign = TextAlign.Center
+                )
+            })
+        Spacer(modifier = Modifier.height(25.dp))
+
+        TextField(modifier = Modifier.height(60.dp),
+            value = plus.value,
+            onValueChange = { plus.value = it },
+            //isError = errorFlag.value,
+            placeholder = {
+                Text(
+                    text = "Add to current",
+                    fontSize = 14.sp,
+                    textAlign = TextAlign.Center
+                )
+            })
+        Spacer(modifier = Modifier.height(25.dp))
+        TextField(modifier = Modifier.height(60.dp),
+            value = minus.value,
+            onValueChange = { minus.value = it },
+            //isError = errorFlag.value,
+            placeholder = {
+                Text(
+                    text = "Subtract from the current",
+                    fontSize = 14.sp,
+                    textAlign = TextAlign.Center
+                )
+            })
+
+        Spacer(modifier = Modifier.height(25.dp))
+
+        Row (modifier = Modifier.padding(top=70.dp)){
+            Button(onClick = {
+                navController.navigate("route 1")
+            }) {
+                Text("Cancel")
+            }
+            Spacer(modifier = Modifier.width(30.dp))
+            Button(onClick = {
+                if (current.value!=""){
+                    Intcurrent.value = current.value.toInt()
+                    limitsList[i].Current = Intcurrent.value
+                }
+                if (limit.value!=""){
+                    Intlimit.value = limit.value.toInt()
+                    limitsList[i].Limit = Intlimit.value
+                }
+                if (plus.value!=""){
+                    Intplus.value = plus.value.toInt()
+                    limitsList[i].Current = limitsList[i].Current + Intplus.value
+                }
+                if (minus.value!=""){
+                    Intminus.value = minus.value.toInt()
+                    if (limitsList[i].Current > Intminus.value){
+                        limitsList[i].Current = limitsList[i].Current - Intminus.value
+                    }
+                    else{
+                        limitsList[i].Current = 0
+                    }
+                }
+
+                updateLimitList()
+                navController.navigate("route 3")
+            }) {
+                Text("Send")
+            }
+        }
+    }
+}
+
+fun updateLimitList() {
+    val newLimitsList = limitsList.toMutableList()
+    limitsList.clear() // Очистить текущий список
+    limitsList.addAll(newLimitsList)
+
 }
