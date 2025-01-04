@@ -20,6 +20,8 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Snackbar
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -42,7 +44,11 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.educational_practice.ui.theme.EducationalpracticeTheme
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.selects.RegistrationFunction
+import kotlinx.coroutines.withContext
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -69,14 +75,21 @@ sealed class Routes(val route: String) {
 }
 
 
+var chooseLogin =  mutableStateOf("")
+var chooseEmail =  mutableStateOf("")
 
 @Composable
 fun RegistrationScreen(navController: NavController) {
     var login = remember { mutableStateOf("") }
     var password = remember { mutableStateOf("") }
     var email = remember { mutableStateOf("") }
-    val context = LocalContext.current
-    flag.value=1
+    val snackbarHostState = remember { SnackbarHostState() }
+    var db = App.instance
+    var userDao = db.userDao()
+
+    var flag1 = remember { mutableStateOf(0) }
+
+    //flag.value=1
     Column (modifier = Modifier.fillMaxSize().background(Color(0xFFFFFEFA))) {
         Image(painter = painterResource(R.drawable.img),
             contentDescription = "logo",
@@ -135,9 +148,23 @@ fun RegistrationScreen(navController: NavController) {
         }
         Button(onClick = {
             //здесь будет ввод данных
-            val userstr = "${email.value} ${password.value} ${login.value}"
-            users.add(userstr)
-            navController.navigate(Routes.Authorization.route)
+            //val userstr = "${email.value} ${password.value} ${login.value}"
+            //users.add(userstr)
+
+            CoroutineScope(Dispatchers.IO).launch() {
+                Log.i("here", "добавляем в бд user")
+                if (userDao.getUsersByEmail(email.value)==null && userDao.getUsersByLogin(login.value)==null){
+                    userDao.insertUser(User(login = login.value, email = email.value, password = password.value))
+                    flag1.value = 1
+                }
+                else{
+
+                    snackbarHostState.showSnackbar("Пользователь с таким логином или почтой уже существует")
+                }
+            }
+            if (flag1.value == 1){
+                navController.navigate(Routes.Authorization.route)
+            }
         },
             modifier = Modifier.padding(top=20.dp).align(Alignment.CenterHorizontally).width(150.dp),
             colors = ButtonDefaults.buttonColors(Color(0xFFB1A5B8)))
@@ -158,8 +185,8 @@ fun AuthorizationScreen(navController: NavController){
     var errorFlag = remember{mutableStateOf(false)}
     val userList: Array<String> = stringArrayResource(id =R.array.users )
 
-   if (flag.value==0){
-       users.addAll(userList)
+    if (flag.value==0){
+        users.addAll(userList)
     }
 
     Column (modifier = Modifier.fillMaxSize().background(Color(0xFFFFFEFA))) {
