@@ -50,7 +50,7 @@ android {
 }
 
 dependencies {
-
+    var compose_version = "1.0.0-rc02"
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -61,6 +61,11 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation ("androidx.compose.material:material:1.7.5")
     implementation("androidx.navigation:navigation-compose:2.8.4")
+    implementation ("androidx.compose.ui:ui:$compose_version")
+    implementation ("androidx.compose.material:material:$compose_version")
+    implementation ("androidx.compose.ui:ui-tooling:$compose_version")
+    implementation ("androidx.navigation:navigation-compose:2.4.0-alpha04")
+    implementation ("androidx.activity:activity-compose:1.3.0-rc02")
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

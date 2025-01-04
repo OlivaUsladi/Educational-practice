@@ -1422,5 +1422,4 @@ fun updateLimitList() {
     val newLimitsList = limitsList.toMutableList()
     limitsList.clear() // Очистить текущий список
     limitsList.addAll(newLimitsList)
-
 }
