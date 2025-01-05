@@ -1,5 +1,6 @@
 package com.example.educational_practice
 
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -151,20 +152,22 @@ fun RegistrationScreen(navController: NavController) {
             //val userstr = "${email.value} ${password.value} ${login.value}"
             //users.add(userstr)
 
-            CoroutineScope(Dispatchers.IO).launch() {
+            CoroutineScope(Dispatchers.IO).launch {
                 Log.i("here", "добавляем в бд user")
-                if (userDao.getUsersByEmail(email.value)==null && userDao.getUsersByLogin(login.value)==null){
+                if (userDao.getUsersByEmail(email.value) == null && userDao.getUsersByLogin(login.value) == null) {
                     userDao.insertUser(User(login = login.value, email = email.value, password = password.value))
                     flag1.value = 1
-                }
-                else{
-
+                } else {
                     snackbarHostState.showSnackbar("Пользователь с таким логином или почтой уже существует")
                 }
+
+                if (flag1.value == 1) {
+                    withContext(Dispatchers.Main) {
+                        navController.navigate(Routes.Authorization.route)
+                    }
+                }
             }
-            if (flag1.value == 1){
-                navController.navigate(Routes.Authorization.route)
-            }
+
         },
             modifier = Modifier.padding(top=20.dp).align(Alignment.CenterHorizontally).width(150.dp),
             colors = ButtonDefaults.buttonColors(Color(0xFFB1A5B8)))
@@ -174,20 +177,29 @@ fun RegistrationScreen(navController: NavController) {
     }
 }
 
-var users = mutableListOf<String>()
-val flag = mutableStateOf(0)
+//var users = mutableListOf<String>()
+//val flag = mutableStateOf(0)
 
+@SuppressLint("CoroutineCreationDuringComposition")
 @Composable
 fun AuthorizationScreen(navController: NavController){
     val context = LocalContext.current
     var login = remember { mutableStateOf("") }
     var password = remember { mutableStateOf("") }
     var errorFlag = remember{mutableStateOf(false)}
-    val userList: Array<String> = stringArrayResource(id =R.array.users )
+    //val userList: Array<String> = stringArrayResource(id =R.array.users )
+    val userList = remember { mutableListOf<User>() }
 
-    if (flag.value==0){
+    var db = App.instance
+    var userDao = db.userDao()
+
+    /*if (flag.value==0){
         users.addAll(userList)
+    }*/
+    CoroutineScope(Dispatchers.IO).launch {
+        userList.addAll(userDao.getAllUsers())
     }
+
 
     Column (modifier = Modifier.fillMaxSize().background(Color(0xFFFFFEFA))) {
         Image(painter = painterResource(R.drawable.img),
@@ -239,10 +251,11 @@ fun AuthorizationScreen(navController: NavController){
                 fontSize = 24.sp)
         }
         Button(onClick = {
-            val loginPasswordCheck = "${login.value} ${password.value}"
-            val passwordEmailCheck = "${password.value} ${login.value}"  // Предполагаем, что email это всегда 3-е поле
+            //val loginPasswordCheck = "${login.value} ${password.value}"
+            //val passwordEmailCheck = "${password.value} ${login.value}"  // Предполагаем, что email это всегда 3-е поле
 
-            if (users.any { it.startsWith(loginPasswordCheck) || it.split(" ").getOrNull(2)?.let {  "${password.value} ${it}" == passwordEmailCheck } == true }) {
+            if (userList.any { (it.login==login.value && it.password == password.value) ||
+                        (it.email==login.value && it.password == password.value)}) {
                 val intent = Intent(context, Financial::class.java)
                 context.startActivity(intent)
             }else{
