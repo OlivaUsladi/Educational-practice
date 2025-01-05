@@ -725,12 +725,7 @@ fun changeTarget(navController: NavController, oldtarget:String, oldcurrent: Str
         }
     }
 }
-/*
-fun updateTargetList() {
-    val newTargetsList = targetsList.toMutableList()
-    targetsList.clear() // Очистить текущий список
-    targetsList.addAll(newTargetsList)
-}*/
+
 
 @Composable
 fun CreateIncome(navController: NavController){
@@ -1201,12 +1196,22 @@ fun AnalyzeScreen(navController: NavController){
 
 }
 
-val limitsList = mutableListOf(Limits("Одолжить", 2000, 200), Limits("Хобби", 3000, 1240),
-    Limits("Кофе", 1000, 1500), Limits("Кафе", 2300, 1200))
 
-
+@SuppressLint("CoroutineCreationDuringComposition")
 @Composable
 fun LimitsScreen(navController: NavController){
+    var flag1 = remember { mutableStateOf(0) }
+    var db = App.instance
+    var limitDao = db.limitDao()
+
+    val limitsList = remember { mutableListOf<Limit>() }
+
+    CoroutineScope(Dispatchers.IO).launch {
+        if (flag1.value == 0) {
+            limitsList.addAll(limitDao.getAllLimits(chooseid.value))
+            flag1.value = 1
+        }
+    }
     Column(modifier = Modifier.fillMaxSize().background(Color(0xFFFFFEFA))) {
         Box(Modifier.fillMaxWidth().wrapContentSize(Alignment.Center)) {
             Row {
@@ -1228,7 +1233,7 @@ fun LimitsScreen(navController: NavController){
             horizontalAlignment = Alignment.CenterHorizontally // Центрируем элементы
         ) {
             itemsIndexed(limitsList) { index, item ->
-                var limit = item.Limit-item.Current
+                var limit = item.limit-item.current
                 Box(
                     modifier = Modifier
                         .background(if (limit>0){ Color(0xFFE1D7D7)} else if (limit==0){Color(0xFFD7E1D7)} else {Color(0xFFCD4A4A)}, shape = RoundedCornerShape(20.dp))
@@ -1252,14 +1257,14 @@ fun LimitsScreen(navController: NavController){
                             Text(text = "Limit: ",
                                 fontSize = 18.sp)
                             Spacer(modifier = Modifier.width(7.dp))
-                            Text(text = item.Limit.toString(),
+                            Text(text = item.limit.toString(),
                                 fontSize = 18.sp)
                         }
                         Row {
                             Text(text = "Current: ",
                                 fontSize = 18.sp)
                             Spacer(modifier = Modifier.width(7.dp))
-                            Text(text = item.Current.toString(),
+                            Text(text = item.current.toString(),
                                 fontSize = 18.sp)
                             Spacer(modifier = Modifier.width(10.dp))
                             Text(text = "Left: ",
@@ -1273,7 +1278,7 @@ fun LimitsScreen(navController: NavController){
                         }
                         //Сделать эту хрень кликабельной
                         Box(Modifier.fillMaxWidth().padding(top=5.dp).clickable(){
-                            navController.navigate(RoutesFinance.changeLimit.route + "/${item.Limit}" + "/${item.Current}"+
+                            navController.navigate(RoutesFinance.changeLimit.route + "/${item.limit}" + "/${item.current}"+
                                     "/${index.toString()}")
                         }) {
                             Text(
@@ -1308,11 +1313,22 @@ fun LimitsScreen(navController: NavController){
     }
 }
 
+@SuppressLint("CoroutineCreationDuringComposition")
 @Composable
 fun createLimit(navController: NavController){
     val limit = remember { mutableStateOf("")}
     val title = remember { mutableStateOf("")}
     val current = remember { mutableStateOf("")}
+
+    var db = App.instance
+    var limitDao = db.limitDao()
+
+    val limitsList = remember { mutableListOf<Limit>() }
+
+    CoroutineScope(Dispatchers.IO).launch {
+        limitsList.addAll(limitDao.getAllLimits(chooseid.value))
+    }
+
     Column(modifier = Modifier.fillMaxSize().background(Color(0xFFFFFEFA)).padding(top=80.dp), horizontalAlignment = Alignment.CenterHorizontally) {
 
         TextField(modifier = Modifier.height(60.dp),
@@ -1359,7 +1375,10 @@ fun createLimit(navController: NavController){
             }
             Spacer(modifier = Modifier.width(30.dp))
             Button(onClick = {
-                limitsList.add(Limits(title.value, limit.value.toInt(), current.value.toInt()))
+                //limitsList.add(Limits(title.value, limit.value.toInt(), current.value.toInt()))
+                CoroutineScope(Dispatchers.IO).launch {
+                    limitDao.insertLimit(Limit(title = title.value, limit = limit.value.toInt(), current = current.value.toInt(), userid = chooseid.value))
+                }
                 navController.navigate("route 3")
             }) {
                 Text("Send")
@@ -1368,6 +1387,7 @@ fun createLimit(navController: NavController){
     }
 }
 
+@SuppressLint("CoroutineCreationDuringComposition")
 @Composable
 fun changeLimit(navController: NavController, oldlimit:String, oldcurrent: String, index: String){
     val limit = remember { mutableStateOf(oldlimit) }
@@ -1375,6 +1395,15 @@ fun changeLimit(navController: NavController, oldlimit:String, oldcurrent: Strin
     val plus =  remember { mutableStateOf("") }
     val minus =  remember { mutableStateOf("") }
     val i = index.toInt()
+
+    var db = App.instance
+    var limitDao = db.limitDao()
+
+    val limitsList = remember { mutableListOf<Limit>() }
+
+    CoroutineScope(Dispatchers.IO).launch {
+        limitsList.addAll(limitDao.getAllLimits(chooseid.value))
+    }
 
     val Intlimit = remember { mutableStateOf(0) }
     val Intcurrent =  remember { mutableStateOf(0) }
@@ -1440,39 +1469,43 @@ fun changeLimit(navController: NavController, oldlimit:String, oldcurrent: Strin
             }
             Spacer(modifier = Modifier.width(30.dp))
             Button(onClick = {
-                if (current.value!=""){
-                    Intcurrent.value = current.value.toInt()
-                    limitsList[i].Current = Intcurrent.value
-                }
-                if (limit.value!=""){
-                    Intlimit.value = limit.value.toInt()
-                    limitsList[i].Limit = Intlimit.value
-                }
-                if (plus.value!=""){
-                    Intplus.value = plus.value.toInt()
-                    limitsList[i].Current = limitsList[i].Current + Intplus.value
-                }
-                if (minus.value!=""){
-                    Intminus.value = minus.value.toInt()
-                    if (limitsList[i].Current > Intminus.value){
-                        limitsList[i].Current = limitsList[i].Current - Intminus.value
-                    }
-                    else{
-                        limitsList[i].Current = 0
-                    }
-                }
+                CoroutineScope(Dispatchers.IO).launch {
+                    if (current.value != "") {
+                        Intcurrent.value = current.value.toInt()
+                        limitDao.updateLimitcurrent(limitsList[i].title, chooseid.value, Intcurrent.value)
 
-                updateLimitList()
+                        limitsList[i].current = Intcurrent.value
+                    }
+                    if (limit.value != "") {
+                        Intlimit.value = limit.value.toInt()
+                        limitDao.updateLimitlimit(limitsList[i].title, chooseid.value, Intlimit.value)
+
+                        limitsList[i].limit = Intlimit.value
+                    }
+                    if (plus.value != "") {
+                        Intplus.value = plus.value.toInt()
+                        limitDao.updateLimitcurrent(limitsList[i].title, chooseid.value, limitsList[i].current + Intplus.value)
+
+                        limitsList[i].current = limitsList[i].current + Intplus.value
+                    }
+                    if (minus.value != "") {
+                        Intminus.value = minus.value.toInt()
+                        if (limitsList[i].current > Intminus.value) {
+                            limitDao.updateLimitcurrent(limitsList[i].title, chooseid.value, limitsList[i].current - Intminus.value)
+
+                            limitsList[i].current = limitsList[i].current - Intminus.value
+                        } else {
+                            limitDao.updateLimitcurrent(limitsList[i].title, chooseid.value, 0)
+
+                            limitsList[i].current = 0
+                        }
+                    }
+                }
+                //updateLimitList()
                 navController.navigate("route 3")
             }) {
                 Text("Send")
             }
         }
     }
-}
-
-fun updateLimitList() {
-    val newLimitsList = limitsList.toMutableList()
-    limitsList.clear() // Очистить текущий список
-    limitsList.addAll(newLimitsList)
 }

@@ -55,8 +55,8 @@ data class Expenses(
 data class Limit(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     @ColumnInfo(name = "title") val title: String,
-    @ColumnInfo(name = "limit") val limit: Int,
-    @ColumnInfo(name = "current") val current: Int,
+    @ColumnInfo(name = "limit") var limit: Int,
+    @ColumnInfo(name = "current") var current: Int,
     @ColumnInfo(name = "user_id") val userid: Long
 )
 
@@ -168,6 +168,12 @@ interface LimitDao {
 
     @Query("SELECT * FROM limits WHERE title = :Title AND user_id = :id")
     suspend fun getLimitByTitle(Title: String, id:Long): Limit
+
+    @Query("UPDATE limits SET `limit` = :newValue WHERE title = :Title AND user_id = :id")
+    fun updateLimitlimit(Title: String, id: Long, newValue: Int)
+
+    @Query("UPDATE limits SET current = :newValue WHERE title = :Title AND user_id = :id")
+    fun updateLimitcurrent(Title: String, id: Long, newValue: Int)
 
     @Query("DELETE FROM limits WHERE title = :Title AND user_id = :id")
     fun deleteLimit(Title: String, id: Long)
