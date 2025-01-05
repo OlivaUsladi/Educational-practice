@@ -8,6 +8,7 @@ import androidx.room.Database
 import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.RoomDatabase
+import androidx.room.Update
 
 // Сущность для пользователя
 @Entity(tableName = "user")
@@ -22,10 +23,10 @@ data class User(
 @Entity(tableName = "targets")
 data class Target(
     @PrimaryKey(autoGenerate = true) @ColumnInfo(name = "id") val id: Long = 0,
-    @ColumnInfo(name = "title") val title: String,
-    @ColumnInfo(name = "target") val target: Int,
-    @ColumnInfo(name = "current") val current: Int,
-    @ColumnInfo(name = "user_id") val userid: Long
+    @ColumnInfo(name = "title") var title: String,
+    @ColumnInfo(name = "target") var target: Int,
+    @ColumnInfo(name = "current") var current: Int,
+    @ColumnInfo(name = "user_id") var userid: Long
 )
 
 // Сущность для доходов
@@ -95,6 +96,16 @@ interface TargetDao {
 
     @Query("SELECT * FROM targets WHERE title = :Title AND user_id = :id")
     suspend fun getTargetByTitle(Title: String, id:Long): Target
+
+    /*@Update
+    suspend fun updateTarget(target: Target)*/
+
+    @Query("UPDATE targets SET target = :newValue WHERE title = :Title AND user_id = :id")
+    fun updateTargettarget(Title: String, id: Long, newValue: Int)
+
+    @Query("UPDATE targets SET current = :newValue WHERE title = :Title AND user_id = :id")
+    fun updateTargetcurrent(Title: String, id: Long, newValue: Int)
+
 
     @Query("DELETE FROM targets WHERE title = :Title AND user_id = :id")
     fun deleteTarget(Title: String, id: Long)

@@ -179,6 +179,7 @@ fun RegistrationScreen(navController: NavController) {
 
 //var users = mutableListOf<String>()
 //val flag = mutableStateOf(0)
+var chooseid =  mutableStateOf(0L)
 
 @SuppressLint("CoroutineCreationDuringComposition")
 @Composable
@@ -256,6 +257,18 @@ fun AuthorizationScreen(navController: NavController){
 
             if (userList.any { (it.login==login.value && it.password == password.value) ||
                         (it.email==login.value && it.password == password.value)}) {
+                CoroutineScope(Dispatchers.IO).launch {
+
+                    userDao.getUsersByEmail(login.value)?.let { user ->
+                        chooseid.value = user.id
+                    }
+                    userDao.getUsersByLogin(login.value)?.let { user ->
+                        chooseid.value = user.id
+                    }
+
+
+                }
+
                 val intent = Intent(context, Financial::class.java)
                 context.startActivity(intent)
             }else{

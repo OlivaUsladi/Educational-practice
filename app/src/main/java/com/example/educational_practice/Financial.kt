@@ -1,5 +1,6 @@
 package com.example.educational_practice
 
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -70,6 +71,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.educational_practice.ui.theme.EducationalpracticeTheme
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 class Financial : ComponentActivity() {
@@ -305,6 +308,7 @@ fun TopAppBar(navController: NavController) {
     val intenttips = Intent(context, Tips::class.java)
 
 
+
     Box(Modifier.fillMaxWidth().height(if (drawerState.isOpen) 250.dp else 150.dp)) {
         ModalNavigationDrawer(
             drawerState = drawerState,
@@ -368,9 +372,11 @@ fun TopAppBar(navController: NavController) {
 }
 
 
-
+/*
 val targetsList = mutableListOf(Targets("Food", 1500, 1000), Targets("Transport", 200, 200),
     Targets("Coffee", 1000, 1500), Targets("Entertainments", 3000, 1200))
+*/
+
 
 val cashList = mutableListOf(200, 500, 800, 250)
 val sberbankList = mutableListOf(1000, 500, 9600, 1250)
@@ -408,8 +414,22 @@ class targetViewModel:ViewModel(){
 }
 
 
+@SuppressLint("CoroutineCreationDuringComposition")
 @Composable
 fun TargetsScreen(navController: NavController) {
+    var flag1 = remember { mutableStateOf(0) }
+    var db = App.instance
+    var targetDao = db.targetDao()
+
+    val targetsList = remember { mutableListOf<Target>() }
+
+    CoroutineScope(Dispatchers.IO).launch {
+        if (flag1.value == 0) {
+            targetsList.addAll(targetDao.getAllTargets(chooseid.value))
+            flag1.value = 1
+        }
+    }
+
     Column(modifier = Modifier.fillMaxSize().background(Color(0xFFFFFEFA))) {
         Box(Modifier.fillMaxWidth().wrapContentSize(Alignment.Center)) {
             Row {
@@ -438,7 +458,7 @@ fun TargetsScreen(navController: NavController) {
                         .height(150.dp)
                         .align(Alignment.CenterHorizontally) // Центрируем Box внутри LazyColumn
                 ) {
-                    var More = item.Target-item.Current
+                    var More = item.target-item.current
                     Column (modifier = Modifier.fillMaxSize().padding(start=7.dp),
                         verticalArrangement = Arrangement.spacedBy(10.dp)){
                         Box(Modifier.fillMaxWidth()) {
@@ -453,28 +473,28 @@ fun TargetsScreen(navController: NavController) {
                             Text(text = "Target: ",
                                 fontSize = 18.sp)
                             Spacer(modifier = Modifier.width(7.dp))
-                            Text(text = item.Target.toString(),
+                            Text(text = item.target.toString(),
                                 fontSize = 18.sp)
                         }
                         Row {
                             Text(text = "Current: ",
                                 fontSize = 18.sp)
-                            Spacer(modifier = Modifier.width(7.dp))
-                            Text(text = item.Current.toString(),
+                            Spacer(modifier = Modifier.width(5.dp))
+                            Text(text = item.current.toString(),
                                 fontSize = 18.sp)
-                            Spacer(modifier = Modifier.width(10.dp))
+                            Spacer(modifier = Modifier.width(7.dp))
                             Text(text = "Required: ",
                                 fontSize = 18.sp)
-                            Spacer(modifier = Modifier.width(7.dp))
+                            Spacer(modifier = Modifier.width(5.dp))
                             if (More<0){
                                 More=0
                             }
                             Text(text = More.toString(),
                                 fontSize = 18.sp)
                         }
-                        //Сделать эту хрень кликабельной
+
                         Box(Modifier.fillMaxWidth().padding(top=5.dp).clickable(){
-                            navController.navigate(RoutesFinance.changeTarget.route + "/${item.Target}" + "/${item.Current}"+
+                            navController.navigate(RoutesFinance.changeTarget.route + "/${item.target}" + "/${item.current}"+
                                     "/${index.toString()}")
                         }) {
                             Text(
@@ -510,11 +530,22 @@ fun TargetsScreen(navController: NavController) {
 }
 
 
+@SuppressLint("CoroutineCreationDuringComposition")
 @Composable
 fun createTarget(navController: NavController){
     val target = remember { mutableStateOf("")}
     val title = remember { mutableStateOf("")}
     val current = remember { mutableStateOf("")}
+
+    var db = App.instance
+    var targetDao = db.targetDao()
+
+    val targetsList = remember { mutableListOf<Target>() }
+
+    CoroutineScope(Dispatchers.IO).launch {
+        targetsList.addAll(targetDao.getAllTargets(chooseid.value))
+    }
+
     Column(modifier = Modifier.fillMaxSize().background(Color(0xFFFFFEFA)).padding(top=80.dp), horizontalAlignment = Alignment.CenterHorizontally) {
 
         TextField(modifier = Modifier.height(60.dp),
@@ -561,7 +592,9 @@ fun createTarget(navController: NavController){
             }
             Spacer(modifier = Modifier.width(30.dp))
             Button(onClick = {
-                targetsList.add(Targets(title.value, target.value.toInt(), current.value.toInt()))
+                CoroutineScope(Dispatchers.IO).launch {
+                    targetDao.insertTarget(Target(title = title.value, target = target.value.toInt(), current = current.value.toInt(), userid = chooseid.value))
+                }
                 navController.navigate("route 1")
             }) {
                 Text("Send")
@@ -570,6 +603,7 @@ fun createTarget(navController: NavController){
     }
 }
 
+@SuppressLint("CoroutineCreationDuringComposition")
 @Composable
 fun changeTarget(navController: NavController, oldtarget:String, oldcurrent: String, index: String){
     val target = remember { mutableStateOf(oldtarget) }
@@ -577,6 +611,15 @@ fun changeTarget(navController: NavController, oldtarget:String, oldcurrent: Str
     val plus =  remember { mutableStateOf("") }
     val minus =  remember { mutableStateOf("") }
     val i = index.toInt()
+
+    var db = App.instance
+    var targetDao = db.targetDao()
+
+    var targetsList = remember { mutableListOf<Target>() }
+
+    CoroutineScope(Dispatchers.IO).launch {
+        targetsList.addAll(targetDao.getAllTargets(chooseid.value))
+    }
 
     val Inttarget = remember { mutableStateOf(0) }
     val Intcurrent =  remember { mutableStateOf(0) }
@@ -642,29 +685,39 @@ fun changeTarget(navController: NavController, oldtarget:String, oldcurrent: Str
             }
             Spacer(modifier = Modifier.width(30.dp))
             Button(onClick = {
-                if (current.value!=""){
-                    Intcurrent.value = current.value.toInt()
-                    targetsList[i].Current = Intcurrent.value
-                }
-                if (target.value!=""){
-                    Inttarget.value = target.value.toInt()
-                    targetsList[i].Target = Inttarget.value
-                }
-                if (plus.value!=""){
-                    Intplus.value = plus.value.toInt()
-                    targetsList[i].Current = targetsList[i].Current + Intplus.value
-                }
-                if (minus.value!=""){
-                    Intminus.value = minus.value.toInt()
-                    if (targetsList[i].Current > Intminus.value){
-                        targetsList[i].Current = targetsList[i].Current - Intminus.value
-                    }
-                    else{
-                        targetsList[i].Current = 0
-                    }
-                }
+                CoroutineScope(Dispatchers.IO).launch {
+                    if (current.value != "") {
+                        Intcurrent.value = current.value.toInt()
+                        targetDao.updateTargetcurrent(targetsList[i].title, chooseid.value, Intcurrent.value)
 
-                updateTargetList()
+                        targetsList[i].current = Intcurrent.value
+                    }
+                    if (target.value != "") {
+                        Inttarget.value = target.value.toInt()
+                        targetDao.updateTargettarget(targetsList[i].title, chooseid.value, Inttarget.value)
+
+                        targetsList[i].target = Inttarget.value
+                    }
+                    if (plus.value != "") {
+                        Intplus.value = plus.value.toInt()
+                        targetDao.updateTargetcurrent(targetsList[i].title, chooseid.value, targetsList[i].current + Intplus.value)
+
+                        targetsList[i].current = targetsList[i].current + Intplus.value
+                    }
+                    if (minus.value != "") {
+                        Intminus.value = minus.value.toInt()
+                        if (targetsList[i].current > Intminus.value) {
+                            targetDao.updateTargetcurrent(targetsList[i].title, chooseid.value, targetsList[i].current- Intminus.value)
+
+                            targetsList[i].current = targetsList[i].current- Intminus.value
+                        } else {
+                            targetDao.updateTargetcurrent(targetsList[i].title, chooseid.value, 0)
+
+                            targetsList[i].current = 0
+                        }
+                    }
+                }
+                //updateTargetList()
                 navController.navigate("route 1")
             }) {
                 Text("Send")
@@ -672,12 +725,12 @@ fun changeTarget(navController: NavController, oldtarget:String, oldcurrent: Str
         }
     }
 }
-
+/*
 fun updateTargetList() {
     val newTargetsList = targetsList.toMutableList()
     targetsList.clear() // Очистить текущий список
     targetsList.addAll(newTargetsList)
-}
+}*/
 
 @Composable
 fun CreateIncome(navController: NavController){
