@@ -360,7 +360,7 @@ fun RecipesScreen(navController: NavController){
             Row {
                 Image(
                     painter = painterResource(R.drawable.icon_food),
-                    contentDescription = "wallet",
+                    contentDescription = "food",
                     modifier = Modifier.size(24.dp)
                 )
                 Text(text = "Recipes",
@@ -431,6 +431,7 @@ fun SearchView(state: MutableState<TextFieldValue>) {
     )
 }
 
+
 @Composable
 fun RecipesList(navController: NavController, state: MutableState<TextFieldValue>) {
     var filteredRecipes: List<Recipe> = emptyList()
@@ -484,7 +485,15 @@ fun RecipesList(navController: NavController, state: MutableState<TextFieldValue
 
                     }
                     Box(Modifier.fillMaxWidth().padding(top=5.dp).clickable(){
-                        navController.navigate(RoutesRecipes.RecipeScreen.route + "/${index.toString()}")
+                        if (filteredRecipes != recipes) {
+                            val i = recipes.indexOfFirst { it.title.equals(recipe.title, ignoreCase = true) }
+                            if (i!=-1){
+                                navController.navigate(RoutesRecipes.RecipeScreen.route + "/${i.toString()}")
+                            }
+                        }
+                        else {
+                            navController.navigate(RoutesRecipes.RecipeScreen.route + "/${index.toString()}")
+                        }
                     }) {
                         Text(
                             text = "More",
