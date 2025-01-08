@@ -1128,7 +1128,7 @@ fun AnalyzeScreen(navController: NavController){
             }
         }
         Box(Modifier.fillMaxWidth().wrapContentSize(Alignment.Center)){
-            Text(text = "Report (December)",
+            Text(text = "Report (January)",
                fontSize = 20.sp,
                 color = Color(0xFF735454),
                 textAlign = TextAlign.Center,
