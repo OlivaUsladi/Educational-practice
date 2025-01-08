@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
@@ -50,6 +51,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.educational_practice.ui.theme.EducationalpracticeTheme
 import kotlinx.coroutines.launch
@@ -75,11 +78,24 @@ class Recipes : ComponentActivity() {
                     }
                 )
             }*/
-            RecipesScreen()
+            val navController = rememberNavController()
+            NavHost(navController = navController, startDestination = RoutesRecipes.RecipesScreen.route) {
+                composable(RoutesRecipes.RecipesScreen.route) {
+                    RecipesScreen(navController)
+                }
+                composable(RoutesRecipes.RecipeScreen.route + "/{index}") {   stackEntry ->
+                    val index = stackEntry.arguments?.getString("index")
+                    RecipeScreen(navController, index.toString())
+                }
+            }
         }
     }
 }
 
+sealed class RoutesRecipes(val route: String) {
+    object RecipesScreen : Routes("RecipesScreen")
+    object RecipeScreen : Routes("RecipeScreen")
+}
 
 //############################################################################
 //класс для хранения шагов
@@ -240,7 +256,7 @@ val recipes = listOf(borschtRecipe, applePieRecipe, carbonaraRecipe, caesarSalad
 
 
 @Composable
-fun RecipesScreen(){
+fun RecipesScreen(navController: NavController){
     Column(modifier = Modifier.fillMaxSize().background(Color(0xFFFFFEFA))) {
         Box(Modifier.fillMaxWidth().height(150.dp).background(Color.White)) {
             Row(modifier = Modifier.padding(top = 50.dp, start = 30.dp)) {
@@ -290,11 +306,10 @@ fun RecipesScreen(){
                     modifier = Modifier.padding(start = 5.dp, bottom = 30.dp))
             }
         }
-        val navController = rememberNavController()
         val textState = remember { mutableStateOf(TextFieldValue("")) }
         SearchView(textState)
         Spacer(modifier = Modifier.height(10.dp))
-        CountryList(navController = navController, state = textState)
+        RecipesList(navController = navController, state = textState)
     }
 }
 
@@ -354,7 +369,7 @@ fun SearchView(state: MutableState<TextFieldValue>) {
 }
 
 @Composable
-fun CountryList(navController: NavController, state: MutableState<TextFieldValue>) {
+fun RecipesList(navController: NavController, state: MutableState<TextFieldValue>) {
     var filteredRecipes: List<Recipe> = emptyList()
     LazyColumn( modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.spacedBy(25.dp),
@@ -406,8 +421,7 @@ fun CountryList(navController: NavController, state: MutableState<TextFieldValue
 
                     }
                     Box(Modifier.fillMaxWidth().padding(top=5.dp).clickable(){
-                        //navController.navigate(RoutesFinance.changeTarget.route + "/${item.target}" + "/${item.current}"+
-                              //  "/${index.toString()}")
+                        navController.navigate(RoutesRecipes.RecipeScreen.route + "/${index.toString()}")
                     }) {
                         Text(
                             text = "More",
@@ -422,28 +436,83 @@ fun CountryList(navController: NavController, state: MutableState<TextFieldValue
         }
     }
 }
-/*
-@Preview(showBackground = true)
-@Composable
-fun CountryListPreview() {
-    val navController = rememberNavController()
-    val textState = remember { mutableStateOf(TextFieldValue("")) }
-    CountryList(navController = navController, state = textState)
-}
 
-fun getListOfCountries(): ArrayList {
-    val isoCountryCodes = Locale.getISOCountries()
-    val countryListWithEmojis = ArrayList()
-    for (countryCode in isoCountryCodes) {
-        val locale = Locale("", countryCode)
-        val countryName = locale.displayCountry
-        val flagOffset = 0x1F1E6
-        val asciiOffset = 0x41
-        val firstChar = Character.codePointAt(countryCode, 0) - asciiOffset + flagOffset
-        val secondChar = Character.codePointAt(countryCode, 1) - asciiOffset + flagOffset
-        val flag =
-            (String(Character.toChars(firstChar)) + String(Character.toChars(secondChar)))
-        countryListWithEmojis.add("$countryName $flag")
+@Composable
+fun RecipeScreen(navController: NavController, index: String){
+    val i = index.toInt()
+    Column(modifier = Modifier.fillMaxSize().background(Color(0xFFFFFEFA))) {
+        Box(Modifier.fillMaxWidth().wrapContentSize(Alignment.Center)) {
+                Text(text = recipes[i].title,
+                    fontSize = 24.sp,
+                    color = Color(0xFFA47676),
+                    modifier = Modifier.padding(start = 5.dp, bottom = 30.dp, top = 25.dp))
+        }
+        Spacer(modifier = Modifier.height(25.dp))
+        LazyColumn {
+            item {
+                Box(Modifier.fillMaxWidth()) {
+                    Text(text = "Описание: " + recipes[i].description,
+                        fontSize = 24.sp,
+                        color = Color(0xFFA47676),
+                        modifier = Modifier.padding(start = 5.dp, bottom = 30.dp))
+                }
+            }
+            item {
+                Box(Modifier.fillMaxWidth()) {
+                    Text(text = "Время приготовления (в минутах): " + recipes[i].time,
+                        fontSize = 24.sp,
+                        color = Color(0xFFA47676),
+                        modifier = Modifier.padding(start = 5.dp, bottom = 30.dp))
+                }
+            }
+            item {
+                Box(Modifier.fillMaxWidth()) {
+                    Text(text = "Ингредиенты:",
+                        fontSize = 24.sp,
+                        color = Color(0xFFA47676),
+                        modifier = Modifier.padding(start = 5.dp, bottom = 30.dp))
+                }
+            }
+            val ingr = recipes[i].ingredients
+            items(ingr){ item ->
+                Box(Modifier.fillMaxWidth()) {
+                    Text(text = item,
+                        fontSize = 24.sp,
+                        color = Color(0xFF786262),
+                        modifier = Modifier.padding(start = 5.dp, bottom = 30.dp))
+                }
+            }
+            item {
+                Box(Modifier.fillMaxWidth()) {
+                    Column {
+                        Text(
+                            text = "Кухня: " + recipes[i].cuisine,
+                            fontSize = 24.sp,
+                            color = Color(0xFFA47676),
+                            modifier = Modifier.padding(start = 5.dp, bottom = 30.dp)
+                        )
+                        Text(
+                            text = "Шаги приготовления: ",
+                            fontSize = 24.sp,
+                            color = Color(0xFFB1A5B8),
+                            modifier = Modifier.padding(start = 5.dp, bottom = 30.dp)
+                        )
+                    }
+                }
+            }
+            val listSteps = recipes[i].steps
+            items(listSteps){ item ->
+                Box(Modifier.fillMaxWidth()) {
+                    Text(text = "Шаг " + item.Number.toString() + " " + item.description,
+                        fontSize = 24.sp,
+                        color = Color(0xFF786262),
+                        modifier = Modifier.padding(start = 5.dp, bottom = 30.dp))
+                }
+            }
+            item{
+                Spacer(modifier = Modifier.height(15.dp))
+            }
+
+        }
     }
-    return countryListWithEmojis
-}*/
+}

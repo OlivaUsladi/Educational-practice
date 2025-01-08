@@ -76,9 +76,6 @@ sealed class Routes(val route: String) {
 }
 
 
-var chooseLogin =  mutableStateOf("")
-var chooseEmail =  mutableStateOf("")
-
 @Composable
 fun RegistrationScreen(navController: NavController) {
     var login = remember { mutableStateOf("") }
