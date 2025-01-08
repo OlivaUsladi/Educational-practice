@@ -1,5 +1,6 @@
 package com.example.educational_practice
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -11,6 +12,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -32,16 +34,23 @@ import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.DrawerValue
+import androidx.compose.material3.ModalDrawerSheet
+import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
@@ -51,6 +60,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -63,34 +73,43 @@ class Recipes : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            /*var navController = rememberNavController()
+            val navController = rememberNavController()
             Surface() {
                 Scaffold (
-                    topBar = { com.example.educational_practice.TopAppBar(navController =
-                    navController)},
-                    bottomBar = {
-                        BottomNavigationBar(navController =
-                        navController)
+                    topBar = { TopAppBarRecipe(navController =
+                    navController)
                     },
                     content = {
-                            padding -> NavHostContainer(navController
+                            padding -> NavHostContainerRecipe(navController
                     = navController, padding = padding)
                     }
                 )
-            }*/
-            val navController = rememberNavController()
-            NavHost(navController = navController, startDestination = RoutesRecipes.RecipesScreen.route) {
-                composable(RoutesRecipes.RecipesScreen.route) {
-                    RecipesScreen(navController)
-                }
-                composable(RoutesRecipes.RecipeScreen.route + "/{index}") {   stackEntry ->
-                    val index = stackEntry.arguments?.getString("index")
-                    RecipeScreen(navController, index.toString())
-                }
             }
+
         }
     }
 }
+
+
+@Composable
+fun NavHostContainerRecipe(
+    navController: NavHostController, //передаем NavHostController
+    padding: PaddingValues //передаем отступ
+) {
+    NavHost(navController = navController, startDestination = RoutesRecipes.RecipesScreen.route,
+        modifier = Modifier.padding(paddingValues = padding),
+        builder = {
+            composable(RoutesRecipes.RecipesScreen.route) {
+                RecipesScreen(navController)
+            }
+            composable(RoutesRecipes.RecipeScreen.route + "/{index}") { stackEntry ->
+                val index = stackEntry.arguments?.getString("index")
+                RecipeScreen(navController, index.toString())
+            }
+        }
+    )
+}
+
 
 sealed class RoutesRecipes(val route: String) {
     object RecipesScreen : Routes("RecipesScreen")
@@ -255,44 +274,88 @@ val greekSaladRecipe = Recipe(
 val recipes = listOf(borschtRecipe, applePieRecipe, carbonaraRecipe, caesarSaladRecipe, bakedChickenRecipe, omeletteRecipe, greekSaladRecipe)
 
 
+//============================================================================
+//TopAppBar реализация
+//============================================================================
 @Composable
-fun RecipesScreen(navController: NavController){
-    Column(modifier = Modifier.fillMaxSize().background(Color(0xFFFFFEFA))) {
-        Box(Modifier.fillMaxWidth().height(150.dp).background(Color.White)) {
-            Row(modifier = Modifier.padding(top = 50.dp, start = 30.dp)) {
-                Image(
-                    painter = painterResource(R.drawable.img),
-                    contentDescription = "logo",
-                    modifier = Modifier.size(70.dp)
-                )
-                Box(Modifier.padding(top = 25.dp, start = 25.dp)) {
-                    Text(
-                        text = "The Road to adulthood",
-                        color = Color(0xFFA47676),
-                        modifier = Modifier.align(Alignment.Center),
-                        fontSize = 20.sp
-                    )
-                }
-                Column(modifier = Modifier.padding(top = 25.dp, start = 30.dp)) {
-                    Box(Modifier.padding(start = 5.dp).clickable() {
-                        //scope.launch { drawerState.open() }
-                    }) {
-                        Image(
-                            painter = painterResource(R.drawable.icon_menu),
-                            contentDescription = "menu",
-                            modifier = Modifier.size(24.dp)
-                        )
+fun TopAppBarRecipe(navController: NavController) {
+    val items = listOf("Finance", "Recipes", "Tips")
+    val selectedItem = remember { mutableStateOf(items[0]) }
+    val drawerState = rememberDrawerState(DrawerValue.Closed)
+    val scope = rememberCoroutineScope()
+    val context = LocalContext.current
+    val intentfin = Intent(context, Financial::class.java)
+    val intenttips = Intent(context, Tips::class.java)
+
+
+
+    Box(Modifier.fillMaxWidth().height(if (drawerState.isOpen) 250.dp else 150.dp)) {
+        ModalNavigationDrawer(
+            drawerState = drawerState,
+            drawerContent = {
+                ModalDrawerSheet{
+                    items.forEach { item ->
+                        TextButton(
+                            onClick = {
+                                scope.launch { drawerState.close() }
+                                selectedItem.value = item
+                                when (selectedItem.value){
+                                    "Finance" -> context.startActivity(intentfin)
+                                    "Recipes" -> navController.navigate(RoutesRecipes.RecipesScreen.route)
+                                    "Tips" -> context.startActivity(intenttips)
+                                }
+                            },
+                        ) { Text(item, fontSize = 22.sp) }
                     }
-                    Box {
-                        Text(
-                            text = "menu",
-                            color = Color(0xFF79747E),
-                            fontSize = 14.sp
+                }
+            },
+            content={
+                Box(Modifier.fillMaxWidth().height(150.dp).background(Color.White)) {
+                    Row(modifier = Modifier.padding(top = 50.dp, start = 30.dp)) {
+                        Image(
+                            painter = painterResource(R.drawable.img),
+                            contentDescription = "logo",
+                            modifier = Modifier.size(70.dp)
                         )
+                        Box(Modifier.padding(top = 25.dp, start = 25.dp)) {
+                            Text(
+                                text = "The Road to adulthood",
+                                color = Color(0xFFA47676),
+                                modifier = Modifier.align(Alignment.Center),
+                                fontSize = 20.sp
+                            )
+                        }
+                        Column(modifier = Modifier.padding(top = 25.dp, start = 30.dp)) {
+                            Box(Modifier.padding(start = 5.dp).clickable() {
+                                scope.launch { drawerState.open() }
+                            }) {
+                                Image(
+                                    painter = painterResource(R.drawable.icon_menu),
+                                    contentDescription = "menu",
+                                    modifier = Modifier.size(24.dp)
+                                )
+                            }
+                            Box {
+                                Text(
+                                    text = "menu",
+                                    color = Color(0xFF79747E),
+                                    fontSize = 14.sp
+                                )
+                            }
+                        }
                     }
                 }
             }
-        }
+        )
+    }
+
+}
+
+
+@Composable
+fun RecipesScreen(navController: NavController){
+    Column(modifier = Modifier.fillMaxSize().background(Color(0xFFFFFEFA))) {
+
         Box(Modifier.fillMaxWidth().wrapContentSize(Alignment.Center)) {
             Row {
                 Image(
