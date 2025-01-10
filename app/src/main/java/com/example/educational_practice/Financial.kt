@@ -372,39 +372,6 @@ fun TopAppBar(navController: NavController) {
 }
 
 
-/*
-val targetsList = mutableListOf(Targets("Food", 1500, 1000), Targets("Transport", 200, 200),
-    Targets("Coffee", 1000, 1500), Targets("Entertainments", 3000, 1200))
-*/
-
-
-val cashList = mutableListOf(200, 500, 800, 250)
-val sberbankList = mutableListOf(1000, 500, 9600, 1250)
-val centerinvestList = mutableListOf(321, 562, 856)
-
-val incomeList = mutableListOf(Income(200, "Cash", "Мама дала"), Income(500, "Cash", "Жора вернул"),
-    Income(250, "Cash", "Сдача на рынке"),
-    Income(1000, "Sberbank", "Оплатили урок Маша"), Income(500, "Sberbank", "Оплатили урок Света"),
-    Income(1250, "Sberbank", "Нет описания"),
-    Income(321, "Center-Invest", "Коля прислал"),  Income(9600, "Sberbank", "Папа прислал"),
-    Income(562, "Center-Invest", "Миша за принтер"),
-    Income(856, "Center-Invest", "Люда за обед"), Income(800, "Cash", "Оплатили урок Наталья"))
-
-
-val expenseList = mutableListOf(Expense(20, "Cash", "пожертвовал"), Expense(50, "Cash", "пирожок"),
-    Expense(800, "Cash", "купил хурму"),
-    Expense(1000, "Sberbank", "На вайлдбериз"), Expense(50, "Sberbank", "платный туалет"),
-    Expense(900, "Sberbank", "Обед в кафе"),
-    Expense(21, "Center-Invest", "вода"),  Expense(150, "Sberbank", "Вале"),
-    Expense(562, "Center-Invest", "Миша принтер"),
-    Expense(856, "Center-Invest", "торт"), Expense(250, "Cash", "яблоки"))
-
-
-
-
-val cashListex = mutableListOf(20, 50, 800, 250)
-val sberbankListex = mutableListOf(1000, 50, 900, 150)
-val centerinvestListex = mutableListOf(21, 562, 856)
 
 /*****************************************************************************************/
 //Класс для обновленния LazyColumn
@@ -727,6 +694,7 @@ fun changeTarget(navController: NavController, oldtarget:String, oldcurrent: Str
 }
 
 
+@SuppressLint("CoroutineCreationDuringComposition")
 @Composable
 fun CreateIncome(navController: NavController){
     val description = remember { mutableStateOf("") }
@@ -736,6 +704,31 @@ fun CreateIncome(navController: NavController){
     val bank = remember { mutableStateOf("Cash") }
     val banks = listOf("Cash", "Sberbank", "Center-Invest")
     val (selectedOption, onOptionSelected) = remember { mutableStateOf(banks[0]) }
+
+    var flag1 = remember { mutableStateOf(0) }
+    var db = App.instance
+    var incomesDao = db.incomesDao()
+
+    val incomesList = remember { mutableListOf<Incomes>() }
+
+    CoroutineScope(Dispatchers.IO).launch {
+        if (flag1.value == 0) {
+            incomesList.addAll(incomesDao.getAllIncomes(chooseid.value))
+
+            flag1.value = 1
+        }
+    }
+    val cashList = mutableListOf<Int>(0)
+    val sberbankList = mutableListOf<Int>(0)
+    val centerinvestList = mutableListOf<Int>(0)
+
+    incomesList.forEach{item ->
+        when(item.type){
+            "Cash" -> cashList.add(item.amount)
+            "Sberbank" -> sberbankList.add(item.amount)
+            "Center-Invest" -> centerinvestList.add(item.amount)
+        }
+    }
 
 
     Column(modifier = Modifier.fillMaxSize().background(Color(0xFFFFFEFA)).padding(top=80.dp), horizontalAlignment = Alignment.CenterHorizontally) {
@@ -791,8 +784,10 @@ fun CreateIncome(navController: NavController){
                     "Sberbank" -> sberbankList.add(Intamount.value)
                     "Center-Invest" -> centerinvestList.add(Intamount.value)
                 }
-                incomeList.add(Income(Intamount.value, bank.value, description.value))
-                updateBudgetList()
+
+                CoroutineScope(Dispatchers.IO).launch {
+                    incomesDao.insertIncomes(Incomes(amount = Intamount.value, type = bank.value, description = description.value, userid = chooseid.value))
+                }
                 navController.navigate("route 2")
             }) {
                 Text("Send")
@@ -803,6 +798,7 @@ fun CreateIncome(navController: NavController){
 
 
 
+@SuppressLint("CoroutineCreationDuringComposition")
 @Composable
 fun CreateExpense(navController: NavController){
     val description = remember { mutableStateOf("") }
@@ -812,6 +808,33 @@ fun CreateExpense(navController: NavController){
     val bank = remember { mutableStateOf("Cash") }
     val banks = listOf("Cash", "Sberbank", "Center-Invest")
     val (selectedOption, onOptionSelected) = remember { mutableStateOf(banks[0]) }
+
+    var flag1 = remember { mutableStateOf(0) }
+    var db = App.instance
+    var expenseDao = db.expensesDao()
+
+    val expenseList = remember { mutableListOf<Expenses>() }
+
+    CoroutineScope(Dispatchers.IO).launch {
+        if (flag1.value == 0) {
+            expenseList.addAll(expenseDao.getAllExpenses(chooseid.value))
+
+            flag1.value = 1
+        }
+    }
+
+
+    val cashListex = mutableListOf<Int>(0)
+    val sberbankListex = mutableListOf<Int>(0)
+    val centerinvestListex = mutableListOf<Int>(0)
+
+    expenseList.forEach{item ->
+        when(item.type){
+            "Cash" -> cashListex.add(item.amount)
+            "Sberbank" -> sberbankListex.add(item.amount)
+            "Center-Invest" -> centerinvestListex.add(item.amount)
+        }
+    }
 
 
     Column(modifier = Modifier.fillMaxSize().background(Color(0xFFFFFEFA)).padding(top=80.dp), horizontalAlignment = Alignment.CenterHorizontally) {
@@ -867,8 +890,10 @@ fun CreateExpense(navController: NavController){
                     "Sberbank" -> sberbankListex.add(Intamount.value)
                     "Center-Invest" -> centerinvestListex.add(Intamount.value)
                 }
-                expenseList.add(Expense(Intamount.value, bank.value, description.value))
-                updateBudgetList()
+                CoroutineScope(Dispatchers.IO).launch {
+                    expenseDao.insertExpenses(Expenses(amount = Intamount.value, type = bank.value, description = description.value, userid = chooseid.value))
+                }
+
                 navController.navigate("route 2")
             }) {
                 Text("Send")
@@ -878,8 +903,24 @@ fun CreateExpense(navController: NavController){
 }
 
 
+@SuppressLint("CoroutineCreationDuringComposition")
 @Composable
 fun pageOfIncome(navController: NavController) {
+    var flag1 = remember { mutableStateOf(0) }
+    var db = App.instance
+    var incomesDao = db.incomesDao()
+
+    val incomeList = remember { mutableListOf<Incomes>() }
+
+    CoroutineScope(Dispatchers.IO).launch {
+        if (flag1.value == 0) {
+            incomeList.addAll(incomesDao.getAllIncomes(chooseid.value))
+
+            flag1.value = 1
+        }
+    }
+
+
     Box(
         Modifier.fillMaxSize().background(Color(0xFFFFFEFA))
     ) {
@@ -906,7 +947,7 @@ fun pageOfIncome(navController: NavController) {
                         Box(Modifier.fillMaxWidth(),
                             contentAlignment = Alignment.Center) {
                             Text(
-                                text = item.Type,
+                                text = item.type,
                                 fontSize = 20.sp,
                                 color = Color(0xFF6C4444),
                                 textAlign = TextAlign.Center
@@ -915,7 +956,7 @@ fun pageOfIncome(navController: NavController) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Spacer(modifier = Modifier.height(7.dp))
                             Text(
-                                text = item.Amount.toString(),
+                                text = item.amount.toString(),
                                 color = Color(0xFF6C4444),
                                 fontSize = 20.sp,
                                 textAlign = TextAlign.Center
@@ -938,8 +979,25 @@ fun pageOfIncome(navController: NavController) {
 }
 
 
+@SuppressLint("CoroutineCreationDuringComposition")
 @Composable
 fun pageOfExpense(navController: NavController) {
+    var flag1 = remember { mutableStateOf(0) }
+    var db = App.instance
+    var expenseDao = db.expensesDao()
+
+    val expenseList = remember { mutableListOf<Expenses>() }
+
+    CoroutineScope(Dispatchers.IO).launch {
+        if (flag1.value == 0) {
+            expenseList.addAll(expenseDao.getAllExpenses(chooseid.value))
+
+            flag1.value = 1
+        }
+    }
+
+
+
     Box(
         Modifier.fillMaxSize().background(Color(0xFFFFFEFA))
     ) {
@@ -966,7 +1024,7 @@ fun pageOfExpense(navController: NavController) {
                         Box(Modifier.fillMaxWidth(),
                             contentAlignment = Alignment.Center) {
                             Text(
-                                text = item.Type,
+                                text = item.type,
                                 fontSize = 20.sp,
                                 color = Color(0xFF6C4444),
                                 textAlign = TextAlign.Center
@@ -975,7 +1033,7 @@ fun pageOfExpense(navController: NavController) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Spacer(modifier = Modifier.height(7.dp))
                             Text(
-                                text = item.Amount.toString(),
+                                text = item.amount.toString(),
                                 color = Color(0xFF6C4444),
                                 fontSize = 20.sp,
                                 textAlign = TextAlign.Center
@@ -998,12 +1056,8 @@ fun pageOfExpense(navController: NavController) {
 }
 
 
-val budgetList = mutableListOf(Budget("Income for cash", cashList.sum(), 2500), Budget("Income for Sberbank", sberbankList.sum(), 12000),
-    Budget("Income for Center-Invest", centerinvestList.sum(), 3006), Budget("Expense for cash", cashListex.sum(), 1500),
-    Budget("Expense for Sberbank", sberbankListex.sum(), 10954), Budget("Expense for Center-Invest", centerinvestListex.sum(), 2296))
 
-
-
+/*
 fun updateBudgetList() {
     budgetList.clear() // Очистить текущий список
     budgetList.add(Budget("Income for cash", cashList.sum(), 2500))
@@ -1013,10 +1067,92 @@ fun updateBudgetList() {
     budgetList.add(Budget("Expense for Sberbank", sberbankListex.sum(), 10954))
     budgetList.add(Budget("Expense for Center-Invest", centerinvestListex.sum(), 2296))
 }
+*/
+
+/*
+val targetsList = mutableListOf(Targets("Food", 1500, 1000), Targets("Transport", 200, 200),
+    Targets("Coffee", 1000, 1500), Targets("Entertainments", 3000, 1200))
+*/
+
+/*
+val cashList = mutableListOf(200, 500, 800, 250)
+val sberbankList = mutableListOf(1000, 500, 9600, 1250)
+val centerinvestList = mutableListOf(321, 562, 856)
+
+val incomeList = mutableListOf(Income(200, "Cash", "Мама дала"), Income(500, "Cash", "Жора вернул"),
+    Income(250, "Cash", "Сдача на рынке"),
+    Income(1000, "Sberbank", "Оплатили урок Маша"), Income(500, "Sberbank", "Оплатили урок Света"),
+    Income(1250, "Sberbank", "Нет описания"),
+    Income(321, "Center-Invest", "Коля прислал"),  Income(9600, "Sberbank", "Папа прислал"),
+    Income(562, "Center-Invest", "Миша за принтер"),
+    Income(856, "Center-Invest", "Люда за обед"), Income(800, "Cash", "Оплатили урок Наталья"))
 
 
+val expenseList = mutableListOf(Expense(20, "Cash", "пожертвовал"), Expense(50, "Cash", "пирожок"),
+    Expense(800, "Cash", "купил хурму"),
+    Expense(1000, "Sberbank", "На вайлдбериз"), Expense(50, "Sberbank", "платный туалет"),
+    Expense(900, "Sberbank", "Обед в кафе"),
+    Expense(21, "Center-Invest", "вода"),  Expense(150, "Sberbank", "Вале"),
+    Expense(562, "Center-Invest", "Миша принтер"),
+    Expense(856, "Center-Invest", "торт"), Expense(250, "Cash", "яблоки"))
+
+
+
+
+val cashListex = mutableListOf(20, 50, 800, 250)
+val sberbankListex = mutableListOf(1000, 50, 900, 150)
+val centerinvestListex = mutableListOf(21, 562, 856)
+*/
+
+
+@SuppressLint("CoroutineCreationDuringComposition")
 @Composable
 fun AnalyzeScreen(navController: NavController){
+    var flag1 = remember { mutableStateOf(0) }
+
+    var db = App.instance
+    var incomesDao = db.incomesDao()
+    var expenseDao = db.expensesDao()
+
+    val incomeList = remember { mutableListOf<Incomes>() }
+    val expenseList = remember { mutableListOf<Expenses>() }
+
+    CoroutineScope(Dispatchers.IO).launch {
+        if (flag1.value == 0) {
+            incomeList.addAll(incomesDao.getAllIncomes(chooseid.value))
+            expenseList.addAll(expenseDao.getAllExpenses(chooseid.value))
+
+            flag1.value = 1
+        }
+    }
+
+    val cashList = mutableListOf<Int>(0)
+    val sberbankList = mutableListOf<Int>(0)
+    val centerinvestList = mutableListOf<Int>(0)
+
+    incomeList.forEach{item ->
+        when(item.type){
+            "Cash" -> cashList.add(item.amount)
+            "Sberbank" -> sberbankList.add(item.amount)
+            "Center-Invest" -> centerinvestList.add(item.amount)
+        }
+    }
+
+    val cashListex = mutableListOf<Int>(0)
+    val sberbankListex = mutableListOf<Int>(0)
+    val centerinvestListex = mutableListOf<Int>(0)
+
+    expenseList.forEach{item ->
+        when(item.type){
+            "Cash" -> cashListex.add(item.amount)
+            "Sberbank" -> sberbankListex.add(item.amount)
+            "Center-Invest" -> centerinvestListex.add(item.amount)
+        }
+    }
+    val budgetList = mutableListOf(Budget("Income for cash", cashList.sum(), 2500), Budget("Income for Sberbank", sberbankList.sum(), 12000),
+        Budget("Income for Center-Invest", centerinvestList.sum(), 3006), Budget("Expense for cash", cashListex.sum(), 1500),
+        Budget("Expense for Sberbank", sberbankListex.sum(), 10954), Budget("Expense for Center-Invest", centerinvestListex.sum(), 2296))
+
 
     Column(modifier = Modifier.fillMaxSize().background(Color(0xFFFFFEFA))) {
 
