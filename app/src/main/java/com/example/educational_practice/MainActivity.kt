@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
+import android.window.SplashScreen
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -12,10 +13,12 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -27,6 +30,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -47,6 +51,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.educational_practice.ui.theme.EducationalpracticeTheme
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.selects.RegistrationFunction
 import kotlinx.coroutines.withContext
@@ -57,15 +62,17 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             val navController = rememberNavController()
-            NavHost(navController = navController, startDestination = Routes.Authorization.route) {
+            NavHost(navController = navController, startDestination = Routes.SplashScreen.route) {
                 composable(Routes.Authorization.route) {
                     AuthorizationScreen(navController)
                 }
                 composable(Routes.Registration.route) {
                     RegistrationScreen(navController)
                 }
+                composable(Routes.SplashScreen.route){
+                    SplashScreen(navController)
+                }
             }
-
         }
     }
 }
@@ -73,6 +80,7 @@ class MainActivity : ComponentActivity() {
 sealed class Routes(val route: String) {
     object Authorization : Routes("authorization")
     object Registration : Routes("registration")
+    object SplashScreen: Routes("SplashScreen")
 }
 
 
@@ -276,6 +284,28 @@ fun AuthorizationScreen(navController: NavController){
             colors = ButtonDefaults.buttonColors(Color(0xFFB1A5B8)))
         {
             Text("Send")
+        }
+    }
+}
+
+@Composable
+fun SplashScreen(navController: NavController){
+    LaunchedEffect(key1 = true) {
+        delay(2500)
+        navController.navigate(Routes.Authorization.route){
+            popUpTo(0)
+        }
+    }
+    Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()){
+        Column {
+            Image(painter = painterResource(R.drawable.img),
+                contentDescription = "logo",
+                modifier = Modifier.size(40.dp))
+            Spacer(modifier = Modifier.height(7.dp))
+            Text(text = "The Road to adulthood",
+                color = Color(0xFFA47676),
+                //modifier = Modifier.align(Alignment.Center),
+                fontSize = 32.sp)
         }
     }
 }
