@@ -119,7 +119,7 @@ fun RegistrationScreen(navController: NavController) {
                 onValueChange = { email.value = it },
                 placeholder = {
                     Text(
-                        text = "Enter email",
+                        text = "Введите email",
                         fontSize = 18.sp,
                         textAlign = TextAlign.Center
                     )
@@ -131,7 +131,7 @@ fun RegistrationScreen(navController: NavController) {
                 onValueChange = { login.value = it },
                 placeholder = {
                     Text(
-                        text = "Enter login",
+                        text = "Введите login",
                         fontSize = 18.sp,
                         textAlign = TextAlign.Center
                     )
@@ -141,10 +141,10 @@ fun RegistrationScreen(navController: NavController) {
             TextField(modifier = Modifier.padding(top=25.dp).align(Alignment.Center).height(60.dp),
                 value = password.value,
                 onValueChange = {password.value = it},
-                placeholder = { Text(text = "Enter password", fontSize = 18.sp, textAlign = TextAlign.Center) })
+                placeholder = { Text(text = "Введите пароль", fontSize = 18.sp, textAlign = TextAlign.Center) })
         }
         Box(Modifier.fillMaxWidth().align(Alignment.CenterHorizontally)){
-            Text(text = "Authorization",
+            Text(text = "Авторизация",
                 color = Color(0xFFA47676),
                 modifier = Modifier.align(Alignment.Center).padding(top=40.dp).clickable(){
                     navController.navigate(Routes.Authorization.route)
@@ -153,9 +153,6 @@ fun RegistrationScreen(navController: NavController) {
                 fontSize = 24.sp)
         }
         Button(onClick = {
-            //здесь будет ввод данных
-            //val userstr = "${email.value} ${password.value} ${login.value}"
-            //users.add(userstr)
 
             CoroutineScope(Dispatchers.IO).launch {
                 Log.i("here", "добавляем в бд user")
@@ -177,13 +174,12 @@ fun RegistrationScreen(navController: NavController) {
             modifier = Modifier.padding(top=20.dp).align(Alignment.CenterHorizontally).width(150.dp),
             colors = ButtonDefaults.buttonColors(Color(0xFFB1A5B8)))
         {
-            Text("Send")
+            Text("Зарегистрироваться")
         }
     }
 }
 
-//var users = mutableListOf<String>()
-//val flag = mutableStateOf(0)
+
 var chooseid =  mutableStateOf(0L)
 
 @SuppressLint("CoroutineCreationDuringComposition")
@@ -231,7 +227,7 @@ fun AuthorizationScreen(navController: NavController){
                 isError = errorFlag.value,
                 placeholder = {
                     Text(
-                        text = "Enter login/email",
+                        text = "Введите login/email",
                         fontSize = 18.sp,
                         textAlign = TextAlign.Center
                     )
@@ -242,23 +238,19 @@ fun AuthorizationScreen(navController: NavController){
                 value = password.value,
                 onValueChange = {password.value = it},
                 isError = errorFlag.value,
-                placeholder = { Text(text = "Enter password",
+                placeholder = { Text(text = "Введите пароль",
                     fontSize = 18.sp,
                     textAlign = TextAlign.Center) })
         }
         Box(Modifier.fillMaxWidth().align(Alignment.CenterHorizontally)){
-            Text(text = "Registration",
+            Text(text = "Регистрация",
                 color = Color(0xFFA47676),
                 modifier = Modifier.align(Alignment.Center).padding(top=40.dp).clickable(){
                     navController.navigate(Routes.Registration.route)
-                    /*val intent = Intent(context, Financial::class.java)
-                    context.startActivity(intent)*/
                 },
                 fontSize = 24.sp)
         }
         Button(onClick = {
-            //val loginPasswordCheck = "${login.value} ${password.value}"
-            //val passwordEmailCheck = "${password.value} ${login.value}"  // Предполагаем, что email это всегда 3-е поле
 
             if (userList.any { (it.login==login.value && it.password == password.value) ||
                         (it.email==login.value && it.password == password.value)}) {
@@ -283,7 +275,7 @@ fun AuthorizationScreen(navController: NavController){
             modifier = Modifier.padding(top=20.dp).align(Alignment.CenterHorizontally).width(150.dp),
             colors = ButtonDefaults.buttonColors(Color(0xFFB1A5B8)))
         {
-            Text("Send")
+            Text("Войти")
         }
     }
 }
@@ -304,7 +296,6 @@ fun SplashScreen(navController: NavController){
             Spacer(modifier = Modifier.height(7.dp))
             Text(text = "The Road to adulthood",
                 color = Color(0xFFA47676),
-                //modifier = Modifier.align(Alignment.Center),
                 fontSize = 32.sp)
         }
     }
